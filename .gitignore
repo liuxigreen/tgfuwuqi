@@ -1,0 +1,24 @@
+# 敏感文件
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# 状态文件（动态生成）
+memory/*-state.json
+memory/submission-history.jsonl
+memory/agenthansa-*.json
+memory/agenthansa-*.jsonl
+logs/
+*.log
+*.pid
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# OS
+.DS_Store
