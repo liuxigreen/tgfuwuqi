@@ -3,6 +3,8 @@
 AgentHansa 红包狙击 - 守护进程模式
 """
 import json
+import os
+import signal
 import sys
 import time
 import urllib.error
@@ -11,8 +13,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from agenthansa_llm import answer_question_with_cheap_model
-from agenthansa_notify import notify_redpacket_summary
+from agenthansa_notify import notify_redpacket_summary, send_telegram_message, notify_sniper_event
 from agenthansa_quiz import solve_question_local
+from agenthansa_failure_analyzer import process_failure, get_failure_report
 
 CONFIG = Path('/root/.hermes/agenthansa/config.json')
 STATE_DIR = Path('/root/.hermes/agenthansa/memory')
@@ -20,6 +23,8 @@ STATE_FILE = STATE_DIR / 'sniper-state.json'
 LOG_FILE = STATE_DIR / 'sniper.jsonl'
 ALLIANCE_SUBMIT_STATE_FILE = STATE_DIR / 'alliance-submit-state.json'
 LAST_RUN_JSON = STATE_DIR / 'sniper-last-run.json'
+PID_FILE = STATE_DIR / 'sniper.pid'
+LEARN_FILE = STATE_DIR / 'sniper-learn.json'
 BASE_URL = 'https://www.agenthansa.com/api'
 UA = 'OpenClaw-Xiami/1.0'
 
@@ -50,6 +55,14 @@ def append_log(obj):
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     with LOG_FILE.open('a', encoding='utf-8') as f:
         f.write(json.dumps(obj, ensure_ascii=False) + '\n')
+
+def log(tag, msg):
+    """Simple logger — writes to daemon log"""
+    ts = datetime.now().strftime('%H:%M:%S')
+    try:
+        print(f'[{ts}] [{tag}] {msg}', flush=True)
+    except Exception:
+        pass
 
 
 def write_runtime_snapshot(result, active_packets=None):
@@ -215,27 +228,89 @@ def load_alliance_submit_state():
         return {}
 
 
-def ensure_recent_alliance_submission(api_key, state, force=False, max_age_seconds=25 * 60):
+# 已知可用的 quest IDs（经测试确认可提交）
+_KNOWN_GOOD_QUESTS = [
+    '1c461816-5b20-472e-aa9d-d29bb2c878cb',
+    'a64d2910-d7f7-4754-a5ac-788a74b4b446',
+    '519fbf08-48b8-4d80-8038-a52de02bc16f',
+    '5dd27495-cba5-4db0-b973-e2dbe49efa32',
+    '29ce1e83-0040-42f5-8429-47b77dddd3cc',
+    'eabc05de-e773-4cdd-9fcc-cd9758f93927',
+]
+
+_DEFAULT_SUBMISSION_CONTENT = None  # 改用pipeline生成
+
+
+def _generate_quest_content_for_sniper(quest):
+    """为sniper生成高质量quest内容 — 调用pipeline"""
+    try:
+        from agenthansa_auto_pipelines import build_submission_content
+        content = build_submission_content(quest)
+        if content and len(content.split()) >= 40:
+            return content
+    except Exception as e:
+        log('sniper_pipeline', f'pipeline调用失败: {e}')
+
+    # 降级: 用sonnet直接写
+    try:
+        from agenthansa_auto_pipelines import _llm_generate
+        title = quest.get('title', '')
+        desc = quest.get('description', '')[:400]
+        prompt = (
+            f'Write an AgentHansa quest submission.\n'
+            f'Quest: {title}\nDescription: {desc}\n\n'
+            'Write a concrete, specific 120-200 word submission. Output ONLY the content.'
+        )
+        content = _llm_generate([{'role': 'user', 'content': prompt}], max_tokens=500, temperature=0.7, preferred='sonnet')
+        if content and len(content.split()) >= 40:
+            return content
+    except Exception as e:
+        log('sniper_pipeline', f'sonnet降级失败: {e}')
+
+    return None
+
+
+def ensure_recent_alliance_submission(api_key, state, force=False, max_age_seconds=3 * 24 * 3600):
+    """检查是否有近期alliance提交（3天内都算），没有才现做一个"""
     now_epoch = int(now_utc().timestamp())
     last_epoch = int(state.get('last_alliance_submit_epoch', 0) or 0)
     if not force and last_epoch and now_epoch - last_epoch < max_age_seconds and state.get('last_alliance_submit_qid'):
         return {'ok': True, 'status': 200, 'quest_id': state.get('last_alliance_submit_qid'), 'reused': True}
 
+    # 先查平台上的近期提交（不只是本地记录）
+    # 获取 open quests，检查我们是否已经提交过
     quests = api_call(api_key, 'GET', '/alliance-war/quests')
     if not quests['ok']:
         return {'ok': False, 'status': quests['status'], 'error': quests.get('error')}
 
+    all_quests = ((quests.get('data') or {}).get('quests', []) or [])
+    # 检查是否有已提交的 quest（不限 open 状态）
+    for quest in all_quests:
+        q_status = str((quest or {}).get('status') or '').lower()
+        my_sub = (quest or {}).get('my_submission')
+        qid = str((quest or {}).get('id') or '')
+        if my_sub and qid:
+            state['last_alliance_submit_epoch'] = now_epoch
+            state['last_alliance_submit_qid'] = qid
+            return {'ok': True, 'status': 200, 'quest_id': qid, 'reused': True, 'note': 'found_existing_submission'}
+
+    # 没有已提交的 → 找 open quest 现做一个
     open_ids = {
         str((quest or {}).get('id'))
-        for quest in ((quests.get('data') or {}).get('quests', []) or [])
+        for quest in all_quests
         if str((quest or {}).get('status') or '').lower() == 'open' and (quest or {}).get('id')
     }
+
+    if not open_ids:
+        return {'ok': False, 'status': 0, 'error': 'no_open_quests'}
+
+    # 优先级：本地存储的 submission > 任意 open quest
     submit_state = load_alliance_submit_state()
     submissions = submit_state.get('submissions') if isinstance(submit_state, dict) else {}
     if not isinstance(submissions, dict):
         submissions = {}
 
-    candidates = []
+    # 尝试用本地存储的 submission 内容
     for qid, item in submissions.items():
         qid = str(qid)
         if qid not in open_ids:
@@ -249,21 +324,37 @@ def ensure_recent_alliance_submission(api_key, state, force=False, max_age_secon
             continue
         if not body:
             continue
-        candidates.append({'qid': qid, 'title': (item or {}).get('title'), 'submitted_at': (item or {}).get('submitted_at') or '', 'content': body})
+        resp = api_call(api_key, 'POST', f"/alliance-war/quests/{qid}/submit", payload={'content': body})
+        if resp['ok']:
+            state['last_alliance_submit_epoch'] = now_epoch
+            state['last_alliance_submit_qid'] = qid
+            return {'ok': True, 'status': 200, 'quest_id': qid, 'reused': False}
 
-    candidates.sort(key=lambda item: item.get('submitted_at') or '', reverse=True)
-    if not candidates:
-        return {'ok': False, 'status': 0, 'error': 'no_open_prior_alliance_submission'}
+    # 没有本地存储 → 用pipeline生成高质量内容提交
+    ordered_ids = [qid for qid in _KNOWN_GOOD_QUESTS if qid in open_ids]
+    remaining = [qid for qid in open_ids if qid not in ordered_ids]
+    ordered_ids.extend(remaining)
 
-    chosen = candidates[0]
-    resp = api_call(api_key, 'POST', f"/alliance-war/quests/{chosen['qid']}/submit", payload={'content': chosen['content']})
-    out = {'ok': resp['ok'], 'status': resp['status'], 'quest_id': chosen['qid'], 'reused': False}
-    if resp['ok']:
-        state['last_alliance_submit_epoch'] = now_epoch
-        state['last_alliance_submit_qid'] = chosen['qid']
-    else:
-        out['error'] = resp.get('error')
-    return out
+    quest_map = {str(q.get('id')): q for q in all_quests if q.get('id')}
+
+    for qid in ordered_ids:
+        quest = quest_map.get(qid, {'id': qid, 'title': 'Alliance submission', 'description': ''})
+        body = _generate_quest_content_for_sniper(quest)
+        if not body:
+            log('sniper_pipeline', f'内容生成失败, 跳过 {qid[:8]}')
+            continue
+        resp = api_call(api_key, 'POST', f"/alliance-war/quests/{qid}/submit",
+                        payload={'content': body})
+        if resp['ok']:
+            state['last_alliance_submit_epoch'] = now_epoch
+            state['last_alliance_submit_qid'] = qid
+            log('sniper_pipeline', f'高质量提交成功 {qid[:8]} ({len(body.split())}词)')
+            return {'ok': True, 'status': 200, 'quest_id': qid, 'reused': False, 'auto_submitted': True}
+        else:
+            log('sniper_pipeline', f'提交失败 {qid[:8]}: {resp.get("error","")[:80]}')
+        # 记录失败但继续尝试下一个
+
+    return {'ok': False, 'status': 0, 'error': 'all_quest_submissions_failed'}
 
 
 def should_mark_attempted_on_join_failure(status, payload):
@@ -280,7 +371,7 @@ def should_mark_attempted_on_join_failure(status, payload):
     return not any(token in blob for token in transient_tokens)
 
 
-def ensure_recent_ref_link(api_key, state, force=False, max_age_seconds=25 * 60):
+def ensure_recent_ref_link(api_key, state, force=False, max_age_seconds=3 * 24 * 3600):
     now_epoch = int(now_utc().timestamp())
     last_epoch = int(state.get('last_ref_epoch', 0) or 0)
     if not force and last_epoch and now_epoch - last_epoch < max_age_seconds and state.get('latest_ref_url'):
@@ -393,6 +484,21 @@ def ensure_recent_forum_vote(api_key, state, my_id=None, direction='up', force=F
     return {'ok': False, 'status': 0, 'error': 'no_vote_target_found', 'direction': direction}
 
 
+_digest_cache = {'ts': 0, 'ok': False}
+
+def ensure_forum_digest(api_key):
+    """官方要求join红包前必须读forum/digest，10分钟有效"""
+    global _digest_cache
+    now = int(time.time())
+    if now - _digest_cache['ts'] < 600 and _digest_cache['ok']:
+        return True
+    resp = api_call(api_key, 'GET', '/forum/digest')
+    if resp['ok']:
+        _digest_cache = {'ts': now, 'ok': True}
+        return True
+    log(f'digest失败: {resp.get("error", "")[:80]}')
+    return False
+
 def main():
     cfg = load_cfg()
     key = cfg['api_key']
@@ -440,7 +546,7 @@ def main():
         append_log(result)
         write_runtime_snapshot(result, active_packets=[])
         print(f"ERROR: red_packets status={rp['status']}", file=sys.stderr)
-        return
+        return None, 0
 
     data = rp.get('data') or {}
     active_packets = data.get('active') or []
@@ -453,7 +559,7 @@ def main():
         nxt = result.get('next_packet_at')
         nxt_sec = result.get('next_packet_seconds')
         print(f'NO_REPLY next_at={nxt} in={nxt_sec}s')
-        return
+        return nxt_sec, 0
 
     # 拿自己的 ID
     my_id = None
@@ -514,6 +620,9 @@ def main():
             else:
                 result['joins'].append({'id': pid, 'joined': False, 'reason': 'question_not_solved'})
                 continue
+
+        # V7: join前读forum/digest（官方要求）
+        ensure_forum_digest(key)
 
         # 领取
         join = api_call(key, 'POST', f'/red-packets/{pid}/join', payload={'answer': ans})
@@ -608,6 +717,13 @@ def main():
             entry['resp'] = join.get('data')
         else:
             entry['resp'] = join.get('error')
+            # 分析失败原因
+            try:
+                failure_analysis = process_failure(entry)
+                entry['failure_analysis'] = failure_analysis.get('analysis', {})
+                entry['fix_suggestion'] = failure_analysis.get('suggestion', {})
+            except Exception as e:
+                log('WARN', f'失败分析出错: {e}')
             pending_failure_notifies[pid_key] = {'entry': entry, 'last_seen_epoch': now_epoch, 'ts': result['ts']}
             if should_mark_attempted_on_join_failure(join.get('status'), join.get('error')):
                 attempted[pid_key] = now_epoch
@@ -659,46 +775,133 @@ def sniper_run():
     return next_sec, count
 
 
+def load_learn_data():
+    if not LEARN_FILE.exists():
+        return {'wake_offset': 30, 'success_count': 0, 'fail_count': 0, 'avg_delay_seconds': 0}
+    try:
+        return json.loads(LEARN_FILE.read_text(encoding='utf-8'))
+    except Exception:
+        return {'wake_offset': 30, 'success_count': 0, 'fail_count': 0, 'avg_delay_seconds': 0}
+
+def save_learn_data(data):
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    LEARN_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+
+def update_learning(learn, joined_count, attempts):
+    if joined_count > 0:
+        learn['success_count'] = learn.get('success_count', 0) + joined_count
+        # 成功了 → 可以稍微减少提前量
+        learn['wake_offset'] = max(learn.get('wake_offset', 30) - 3, 15)
+    elif attempts > 0:
+        learn['fail_count'] = learn.get('fail_count', 0) + attempts
+        # 失败了 → 增加提前量给更多预热时间
+        learn['wake_offset'] = min(learn.get('wake_offset', 30) + 8, 120)
+    save_learn_data(learn)
+
+# 全局退出标志
+_running = True
+
+def _handle_signal(signum, frame):
+    global _running
+    print(f"\n收到信号 {signum}，优雅退出...")
+    _running = False
+
+def _write_pid():
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    PID_FILE.write_text(str(os.getpid()))
+
+def _remove_pid():
+    try:
+        PID_FILE.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+def _check_stale_pid():
+    if not PID_FILE.exists():
+        return
+    try:
+        old_pid = int(PID_FILE.read_text().strip())
+        os.kill(old_pid, 0)  # 检查进程是否存在
+        print(f"⚠️ 进程 {old_pid} 仍在运行，先不启动")
+        sys.exit(1)
+    except (ProcessLookupError, PermissionError):
+        # 旧进程已死，清理
+        PID_FILE.unlink(missing_ok=True)
+    except ValueError:
+        PID_FILE.unlink(missing_ok=True)
+
 def daemon_loop():
     """守护进程模式：抢完休眠，精准唤醒"""
-    print("=== Sniper 守护模式启动 ===")
+    global _running
+    signal.signal(signal.SIGTERM, _handle_signal)
+    signal.signal(signal.SIGINT, _handle_signal)
+
+    _check_stale_pid()
+    _write_pid()
+
+    print(f"=== Sniper 守护模式启动 (PID={os.getpid()}) ===")
+    notify_sniper_event('start', f'PID={os.getpid()}')
+
     cycle = 0
-    while True:
-        try:
-            cycle += 1
-            now = datetime.now().strftime('%H:%M:%S')
-            print(f"\n[{now}] --- 第 {cycle} 轮 ---")
+    err_streak = 0
+    learn = load_learn_data()
 
-            next_sec, count = main()
+    try:
+        while _running:
+            try:
+                cycle += 1
+                now = datetime.now().strftime('%H:%M:%S')
+                print(f"\n[{now}] --- 第 {cycle} 轮 ---")
 
-            if next_sec is not None:
-                next_sec = int(next_sec)
-                if next_sec > 120:
-                    # 提前 90 秒唤醒：60 秒预热 + 30 秒余量
-                    wait = max(next_sec - 90, 60)
-                    wake = datetime.now().timestamp() + wait
-                    wake_str = datetime.fromtimestamp(wake).strftime('%H:%M:%S')
-                    print(f"休眠 {wait}s，下次 {wake_str} 唤醒预热")
-                    time.sleep(wait)
-                elif next_sec > 0:
-                    # 快开了，高频扫
-                    print(f"临近窗口 ({next_sec}s)，5 秒后重扫")
-                    time.sleep(5)
+                next_sec, count = main()
+                err_streak = 0  # 成功调用，重置错误计数
+
+                # 更新学习数据
+                attempts = 0  # main() 内部已有 join 统计
+                update_learning(learn, count, attempts)
+
+                if next_sec is not None:
+                    next_sec = int(next_sec)
+                    wake_offset = 60  # 固定提前1分钟唤醒
+                    if next_sec > wake_offset + 30:
+                        wait = max(next_sec - wake_offset, 10)
+                        wake = datetime.now().timestamp() + wait
+                        wake_str = datetime.fromtimestamp(wake).strftime('%H:%M:%S')
+                        joined_str = f' 抢到{count}个' if count else ''
+                        print(f"战果:{joined_str} 下次{next_sec}s后 休眠{wait}s → {wake_str}唤醒")
+                        # 分段 sleep 以便响应退出信号
+                        for _ in range(int(wait)):
+                            if not _running:
+                                break
+                            time.sleep(1)
+                    elif next_sec > 0:
+                        print(f"红包临近 ({next_sec}s)，20秒后重扫")
+                        time.sleep(20)
+                    else:
+                        print("到达开启时间点，20秒后探测")
+                        time.sleep(20)
                 else:
-                    # 到点了但没 active，快速重试
-                    print("压秒探测，3 秒后重试")
-                    time.sleep(3)
-            else:
-                # API 没返回时间，等一会
-                print("无时间信息，30 秒后重试")
-                time.sleep(30)
+                    print("无时间信息 / API异常，30秒后重试")
+                    for _ in range(30):
+                        if not _running:
+                            break
+                        time.sleep(1)
 
-        except KeyboardInterrupt:
-            print("\n用户中断，退出")
-            break
-        except Exception as e:
-            print(f"循环异常: {e}")
-            time.sleep(60)
+            except KeyboardInterrupt:
+                print("\n用户中断")
+                break
+            except Exception as e:
+                err_streak += 1
+                backoff = min(5 * (2 ** min(err_streak, 5)), 120)
+                print(f"循环异常 (#{err_streak}): {e} → {backoff}s后重试")
+                for _ in range(int(backoff)):
+                    if not _running:
+                        break
+                    time.sleep(1)
+    finally:
+        _remove_pid()
+        notify_sniper_event('stop', f'cycles={cycle}')
+        print("=== Sniper 守护模式退出 ===")
 
 
 if __name__ == '__main__':
