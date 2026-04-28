@@ -30,10 +30,19 @@ def run_fast_signal_pipeline(signal_or_sample: Dict[str, Any], mode: str = 'prop
     if ll_cfg.get("enabled", True) and ll_cfg.get("allow_in_fast_path", True):
         similar = retrieve_similar_experiences({"symbol": sample['radar_signal']['symbol'], "market_type": sample['radar_signal'].get('market_type'), "direction": sample['radar_signal'].get('direction'), "tags": list((sample['radar_signal'].get('features') or {}).keys())}, top_k=int(ll_cfg.get('top_k',5)), max_latency_ms=int(ll_cfg.get('max_latency_ms',200)), min_similarity=float(ll_cfg.get('min_similarity',0.55)))
 
-    # merge fast context back into sample
-    if fast_ctx.market_snapshot: sample['market_snapshot'] = {"symbol": sample['radar_signal']['symbol'], "price": fast_ctx.market_snapshot.get('price', 0), "price_change_24h_pct": 0.0, "volume_change_pct": 0.0, "funding_rate": fast_ctx.funding_snapshot.get('funding_rate', 0.0) if fast_ctx.funding_snapshot else 0.0, "open_interest_change_pct": 0.0, "volatility_score": 0.5, "liquidity_score": 0.5, "timestamp": sample['radar_signal']['timestamp']}
-    if fast_ctx.account_snapshot and sample.get('account_snapshot') is None:
-        sample['account_snapshot'] = {"equity_usdt": 10000, "available_usdt": 10000, "daily_pnl_pct": 0.0, "open_positions_count": 0, "same_symbol_existing_position": False, "total_exposure_pct": 0.0, "max_position_exposure_pct": 0.0, "timestamp": fast_ctx.account_snapshot.get('timestamp', sample['radar_signal']['timestamp'])}
+    # merge fast context back into sample (full snapshots, no fabricated defaults)
+    if fast_ctx.market_snapshot is not None:
+        sample['market_snapshot'] = dict(fast_ctx.market_snapshot)
+    if fast_ctx.oi_snapshot is not None:
+        sample['oi_snapshot'] = dict(fast_ctx.oi_snapshot)
+    if fast_ctx.funding_snapshot is not None:
+        sample['funding_snapshot'] = dict(fast_ctx.funding_snapshot)
+    if fast_ctx.account_snapshot is not None:
+        sample['account_snapshot'] = dict(fast_ctx.account_snapshot)
+    if fast_ctx.sentiment_snapshot is not None:
+        sample['sentiment_snapshot'] = dict(fast_ctx.sentiment_snapshot)
+    if fast_ctx.smartmoney_snapshot is not None:
+        sample['smartmoney_snapshot'] = dict(fast_ctx.smartmoney_snapshot)
 
     # execution gates from fast context
     critical_missing = ('market' in fast_ctx.missing_inputs) or ('account' in fast_ctx.missing_inputs)
@@ -61,6 +70,7 @@ def run_fast_signal_pipeline(signal_or_sample: Dict[str, Any], mode: str = 'prop
     result['fast_path'] = True
     result['degraded_mode'] = fast_ctx.degraded_mode
     result['adapter_status'] = fast_ctx.adapter_status
+    result['adapter_is_mock'] = {k: bool((sample.get(f'{k}_snapshot') or {}).get('is_mock')) for k in ['market','oi','funding','account','sentiment','smartmoney']}
     result['cache_status'] = fast_ctx.cache_status
     result['missing_inputs'] = fast_ctx.missing_inputs
     result['nuwa_mode'] = 'fast'
@@ -70,6 +80,8 @@ def run_fast_signal_pipeline(signal_or_sample: Dict[str, Any], mode: str = 'prop
     result['experience_adjustments'] = similar.get('experience_adjustments', {})
     result['fast_context_used'] = True
     result['execution_allowed'] = result.get('execution_allowed', not critical_missing)
+    if mode == 'demo_auto' and critical_missing:
+        result['action'] = 'blocked'
     result['execution_blocked_reason'] = result.get('execution_blocked_reason', [])
 
     # stale market/account must not execute

@@ -6,6 +6,7 @@ from typing import Any, Dict
 
 from .config import load_config
 from .decision import build_trade_decision
+from .daily_limits import check_daily_limits
 from .journal import write_journal_event
 from .models import Direction, NuwaEval, PositionState, enum_from_value, model_to_dict
 from .nuwa_runtime import load_registry, run_nuwa_evaluation, run_shadow_nuwa_evaluations
@@ -60,11 +61,20 @@ def run_pretrade_pipeline(sample_or_signal: Dict[str, Any], mode: str = "propose
         mode=mode,
         config=config,
     )
+    limits = check_daily_limits(decision.symbol, decision.action.value, config)
+    decision_payload_pre = model_to_dict(decision)
+    if not limits.get("passed", True) and decision_payload_pre.get("action") in {"open_long", "open_short", "small_probe"}:
+        decision_payload_pre["action"] = "blocked"
+        decision_payload_pre["blocked_reasons"] = sorted(set(decision_payload_pre.get("blocked_reasons", []) + limits.get("blocked_reasons", [])))
+        from .models import TradeDecision, TradeAction
+        decision.action = TradeAction.BLOCKED
+        decision.blocked_reasons = decision_payload_pre["blocked_reasons"]
     intent = build_order_intent(decision, config)
     gateway = _gateway_from_config(config, force_dry_run=True)
     execution_result = gateway.execute_order_intent(intent, mode, risk_result={"passed": decision.risk_status != "blocked"}, demo_execute=False)
 
     decision_payload = model_to_dict(decision)
+    decision_payload["daily_limits_status"] = limits
     decision_payload["shadow_nuwa_evals"] = shadow
     journal_path = write_journal_event("decision", pipeline_id, decision.symbol, decision_payload, decision.nuwa_version, base_dir=journal_dir)
     write_journal_event("order_intent", pipeline_id, decision.symbol, model_to_dict(intent), decision.nuwa_version, base_dir=journal_dir)

@@ -9,28 +9,48 @@ from ..learning_loop.proposals import build_learning_proposals
 
 
 def build_proposal(date: str, review: Dict) -> Dict:
-    learning = build_learning_proposals(review, {"ok": True, "overconfidence_rate": float(review.get("overconfidence_rate", 0) or 0), "sample_size": int(review.get("outcome_count", 0) or 0)})
-    base_changes = [
+    sample_size = int(review.get("outcome_count", 0) or 0)
+    insufficient = sample_size < 10
+    learning = build_learning_proposals(
+        review,
         {
-            "type": "scoring_weight_adjustment",
-            "target": "smart_money_score",
-            "old_value": 0.20,
-            "new_value": 0.22,
-            "reason": "demo observations suggest smartmoney useful",
-            "evidence": {"snapshot_id": None, "outcome_id": None, "review_id": None, "experience_id": None},
-            "sample_size": int(review.get("outcome_count", 0) or 0),
-            "confidence": 0.6,
-            "expected_effect": "slightly_better_filtering",
-            "risk": "overfit",
-            "requires_human_approval": True,
-            "safe_to_auto_apply": False,
-        }
-    ]
+            "ok": True,
+            "overconfidence_rate": float(review.get("overconfidence_rate", 0) or 0),
+            "sample_size": sample_size,
+        },
+    )
+    changes = []
+    if not insufficient:
+        changes.extend(learning.get("proposed_changes", []))
+
+    if not changes:
+        changes.append(
+            {
+                "type": "no_change",
+                "target": "scoring_and_risk",
+                "old_value": None,
+                "new_value": None,
+                "reason": "insufficient_sample_size" if insufficient else "no_actionable_signal",
+                "evidence": {
+                    "snapshot_id": None,
+                    "outcome_id": None,
+                    "review_id": None,
+                    "experience_id": None,
+                },
+                "sample_size": sample_size,
+                "confidence": 0.0,
+                "expected_effect": "none",
+                "risk": "none",
+                "requires_human_approval": True,
+                "safe_to_auto_apply": False,
+            }
+        )
+
     return {
         "date": date,
         "proposal_id": f"prop_{uuid.uuid4().hex[:12]}",
-        "changes": base_changes + learning.get("proposed_changes", []),
-        "recommended_weight_changes": {"smart_money_score": 0.22},
+        "changes": changes,
+        "recommended_weight_changes": {},
         "recommended_threshold_changes": {},
         "recommended_disabled_recipes": [],
         "recommended_enabled_recipes_for_propose_only": [],
@@ -40,6 +60,7 @@ def build_proposal(date: str, review: Dict) -> Dict:
         "forbidden_auto_changes": ["enable_live", "increase_leverage", "increase_max_daily_loss"],
         "requires_human_approval": True,
         "safe_to_auto_apply": False,
+        "insufficient_sample_size": insufficient,
     }
 
 
