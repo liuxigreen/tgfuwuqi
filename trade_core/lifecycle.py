@@ -13,6 +13,7 @@ from .order_intent import build_order_intent
 from .okx_gateway import OkxGateway
 from .position_manager import evaluate_position_exit
 from .signal_bus import parse_case_payload
+from .learning_loop.snapshot import append_snapshot, create_decision_snapshot
 
 
 def _gateway_from_config(config: dict, force_dry_run: bool = True) -> OkxGateway:
@@ -68,6 +69,8 @@ def run_pretrade_pipeline(sample_or_signal: Dict[str, Any], mode: str = "propose
     journal_path = write_journal_event("decision", pipeline_id, decision.symbol, decision_payload, decision.nuwa_version, base_dir=journal_dir)
     write_journal_event("order_intent", pipeline_id, decision.symbol, model_to_dict(intent), decision.nuwa_version, base_dir=journal_dir)
     write_journal_event("execution_result", pipeline_id, decision.symbol, execution_result, decision.nuwa_version, base_dir=journal_dir)
+    snapshot = create_decision_snapshot({"pipeline_id": pipeline_id, "decision": decision_payload, "order_intent": model_to_dict(intent), "mode": mode}, enriched, pipeline_id=pipeline_id)
+    snapshot_path = append_snapshot(snapshot)
 
     return {
         "pipeline_id": pipeline_id,
@@ -84,6 +87,8 @@ def run_pretrade_pipeline(sample_or_signal: Dict[str, Any], mode: str = "propose
         "warnings": decision.warnings + registry.get("warnings", []),
         "journal_path": journal_path,
         "nuwa_version": decision.nuwa_version,
+        "decision_snapshot": snapshot,
+        "decision_snapshot_path": snapshot_path,
     }
 
 

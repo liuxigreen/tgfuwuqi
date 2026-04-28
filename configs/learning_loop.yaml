@@ -1,0 +1,16 @@
+experience_retrieval:
+  enabled: true
+  max_latency_ms: 200
+  top_k: 5
+  min_similarity: 0.55
+  max_score_boost: 5
+  max_score_penalty: 12
+  allow_in_fast_path: true
+
+outcome_review:
+  default_horizons_minutes: [240, 1440, 4320]
+  require_price_data: true
+
+experience_store:
+  min_review_confidence: 0.5
+  min_evidence_required: true

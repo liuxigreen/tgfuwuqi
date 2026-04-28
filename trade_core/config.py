@@ -94,6 +94,7 @@ DEFAULTS: Dict[str, Any] = {
     "skill_intelligence": {"auto_discovery": True, "auto_install": False, "auto_enable_new_skills": False, "disable_live_trade_skills": True},
     "exit_policy_templates": {"templates": {}},
     "exit_optimization": {"enabled": True, "min_trades_per_policy": 20, "min_days": 7, "requires_human_approval": True, "forbid_auto_apply": True, "max_allowed_stop_loss_pct": 0.035},
+    "learning_loop": {"experience_retrieval": {"enabled": True, "max_latency_ms": 200, "top_k": 5, "min_similarity": 0.55, "max_score_boost": 5, "max_score_penalty": 12, "allow_in_fast_path": True}, "outcome_review": {"default_horizons_minutes": [240, 1440, 4320], "require_price_data": True}, "experience_store": {"min_review_confidence": 0.5, "min_evidence_required": True}},
 }
 
 
@@ -185,6 +186,7 @@ def load_config(config_dir: Path | None = None) -> Dict[str, Any]:
         "skill_intelligence": _merge(DEFAULTS["skill_intelligence"], load_yaml(cfg_dir / "skill_intelligence.yaml")),
         "exit_policy_templates": _merge(DEFAULTS["exit_policy_templates"], load_yaml(cfg_dir / "exit_policy_templates.yaml")),
         "exit_optimization": _merge(DEFAULTS["exit_optimization"], load_yaml(cfg_dir / "exit_optimization.yaml")),
+        "learning_loop": _merge(DEFAULTS["learning_loop"], load_yaml(cfg_dir / "learning_loop.yaml")),
     }
     cfg["latency"] = _latency_compat(cfg["latency_structured"])
     return cfg

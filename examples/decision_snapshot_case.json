@@ -1,0 +1,1 @@
+{"pipeline_id":"p1","decision":{"decision_id":"d1","symbol":"BTC-USDT","market_type":"swap","direction":"long","action":"propose","confidence":0.7,"final_score":72,"score_breakdown":{"total_score":72},"nuwa_version":"nuwa_default_v1","reason_codes":[],"blocked_reasons":[],"warnings":[]},"order_intent":{"exit_policy_id":"trend_following_default"},"mode":"propose"}

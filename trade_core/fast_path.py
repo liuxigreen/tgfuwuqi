@@ -9,6 +9,8 @@ from .daily_limits import check_daily_limits
 from .enrichment import enrich_fast_context
 from .latency import LatencyTracker
 from .lifecycle import run_demo_execution_pipeline, run_pretrade_pipeline
+from .learning_loop.retriever import retrieve_similar_experiences
+from .journal import write_journal_event
 
 _GLOBAL_CACHE = TTLCache()
 
@@ -22,6 +24,11 @@ def run_fast_signal_pipeline(signal_or_sample: Dict[str, Any], mode: str = 'prop
     gw = OkxGateway(backend=cfg['okx_gateway'].get('backend','mock'), profile=cfg['okx_gateway'].get('profile','demo'), dry_run=not demo_execute, allow_live=cfg['okx_gateway'].get('allow_live',False), allow_trade_execution=cfg['okx_gateway'].get('allow_trade_execution',False), command_timeout_seconds=int(cfg['okx_gateway'].get('command_timeout_seconds',20)))
     fast_ctx = enrich_fast_context(sample['radar_signal'], mode, gw, cache or _GLOBAL_CACHE, {**lat, **cfg.get('cache', {})})
     tracker.mark('enrich')
+
+    ll_cfg = cfg.get("learning_loop", {}).get("experience_retrieval", {})
+    similar = {"used": False, "experiences": [], "experience_adjustments": {"score_adjustment": 0}}
+    if ll_cfg.get("enabled", True) and ll_cfg.get("allow_in_fast_path", True):
+        similar = retrieve_similar_experiences({"symbol": sample['radar_signal']['symbol'], "market_type": sample['radar_signal'].get('market_type'), "direction": sample['radar_signal'].get('direction'), "tags": list((sample['radar_signal'].get('features') or {}).keys())}, top_k=int(ll_cfg.get('top_k',5)), max_latency_ms=int(ll_cfg.get('max_latency_ms',200)), min_similarity=float(ll_cfg.get('min_similarity',0.55)))
 
     # merge fast context back into sample
     if fast_ctx.market_snapshot: sample['market_snapshot'] = {"symbol": sample['radar_signal']['symbol'], "price": fast_ctx.market_snapshot.get('price', 0), "price_change_24h_pct": 0.0, "volume_change_pct": 0.0, "funding_rate": fast_ctx.funding_snapshot.get('funding_rate', 0.0) if fast_ctx.funding_snapshot else 0.0, "open_interest_change_pct": 0.0, "volatility_score": 0.5, "liquidity_score": 0.5, "timestamp": sample['radar_signal']['timestamp']}
@@ -57,6 +64,10 @@ def run_fast_signal_pipeline(signal_or_sample: Dict[str, Any], mode: str = 'prop
     result['cache_status'] = fast_ctx.cache_status
     result['missing_inputs'] = fast_ctx.missing_inputs
     result['nuwa_mode'] = 'fast'
+    result['experience_retrieval_used'] = bool(similar.get('used'))
+    result['similar_experience_count'] = len(similar.get('experiences', []))
+    result['similar_experiences'] = similar.get('experiences', [])
+    result['experience_adjustments'] = similar.get('experience_adjustments', {})
     result['fast_context_used'] = True
     result['execution_allowed'] = result.get('execution_allowed', not critical_missing)
     result['execution_blocked_reason'] = result.get('execution_blocked_reason', [])

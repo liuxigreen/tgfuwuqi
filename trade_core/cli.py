@@ -20,6 +20,17 @@ from .exit_policy import evaluate_exit_policies, list_templates, propose_exit_po
 from .skill_intelligence import evaluate_skills, load_skill_registry, route_skill_recipe
 from .skill_intelligence.metrics import build_skill_metrics
 from .skill_intelligence.updater import update_skills_registry
+from .learning_loop import (
+    add_experience_from_review,
+    add_feedback,
+    bootstrap_experiences,
+    calibration_review,
+    evaluate_outcomes,
+    list_experiences,
+    review_feedback,
+    review_outcomes,
+    search_experiences,
+)
 from .signal_bus import parse_case_payload
 
 
@@ -62,6 +73,15 @@ def main() -> None:
     sub.add_parser("skills-evaluate")
     sr = sub.add_parser("skills-route"); sr.add_argument("--task", required=True); sr.add_argument("--mode", default="propose")
     sm = sub.add_parser("skills-metrics"); sm.add_argument("--journal", required=True)
+    eo = sub.add_parser("evaluate-outcomes"); eo.add_argument("--horizon", default="24h")
+    ro = sub.add_parser("review-outcomes"); ro.add_argument("--date", required=True)
+    ea = sub.add_parser("experience-add"); ea.add_argument("--review", required=True)
+    sub.add_parser("experience-list")
+    es = sub.add_parser("experience-search"); es.add_argument("--symbol", required=False); es.add_argument("--tags", required=False, default="")
+    fa = sub.add_parser("feedback-add"); fa.add_argument("--decision-id", required=True); fa.add_argument("--type", required=True); fa.add_argument("--message", required=True)
+    fr = sub.add_parser("feedback-review"); fr.add_argument("--date", required=True)
+    cr = sub.add_parser("calibration-review"); cr.add_argument("--date", required=True)
+    be = sub.add_parser("bootstrap-experiences"); be.add_argument("--sample", required=True)
 
     args = parser.parse_args(); config = load_config()
 
@@ -134,6 +154,25 @@ def main() -> None:
     if args.cmd == "skills-metrics":
         summary = review_journal(args.journal)
         print(json.dumps(build_skill_metrics(summary.get("events", []) if isinstance(summary, dict) else []), ensure_ascii=False)); return
+
+    if args.cmd == "evaluate-outcomes": print(json.dumps(evaluate_outcomes(horizon=args.horizon), ensure_ascii=False)); return
+    if args.cmd == "review-outcomes": print(json.dumps(review_outcomes(args.date), ensure_ascii=False)); return
+    if args.cmd == "experience-add":
+        import json as _j
+        from pathlib import Path as _P
+        rv = _j.loads(_P(args.review).read_text(encoding="utf-8")) if _P(args.review).exists() else {"review_id": args.review, "should_update_experience_store": True, "snapshot_id": "unknown", "outcome_id": "unknown"}
+        print(json.dumps(add_experience_from_review(rv), ensure_ascii=False)); return
+    if args.cmd == "experience-list": print(json.dumps(list_experiences(), ensure_ascii=False)); return
+    if args.cmd == "experience-search": print(json.dumps(search_experiences(symbol=args.symbol, tags=[x.strip() for x in args.tags.split(',') if x.strip()]), ensure_ascii=False)); return
+    if args.cmd == "feedback-add": print(json.dumps(add_feedback(args.decision_id, args.type, args.message), ensure_ascii=False)); return
+    if args.cmd == "feedback-review": print(json.dumps(review_feedback(args.date), ensure_ascii=False)); return
+    if args.cmd == "calibration-review":
+        import json as _j
+        from pathlib import Path as _P
+        p = _P("data/outcomes") / f"{args.date}.outcomes.jsonl"
+        outcomes = [_j.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()] if p.exists() else []
+        print(json.dumps(calibration_review(outcomes), ensure_ascii=False)); return
+    if args.cmd == "bootstrap-experiences": print(json.dumps(bootstrap_experiences(args.sample), ensure_ascii=False)); return
 
 
 if __name__ == "__main__":

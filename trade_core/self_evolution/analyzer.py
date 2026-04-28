@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from collections import Counter
 from typing import Dict
 
 from .metrics import load_events_for_date
+from ..learning_loop.calibration import calibration_review
+from ..learning_loop.feedback import review_feedback
 
 
 def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
@@ -16,6 +20,13 @@ def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
     lat = [x for x in lat if isinstance(x, (int, float))]
     lat_sorted = sorted(lat)
     p95 = lat_sorted[int(0.95 * (len(lat_sorted)-1))] if lat_sorted else 0
+    fb = review_feedback(date)
+    outcomes = []
+    op = Path("data/outcomes") / f"{date}.outcomes.jsonl"
+    if op.exists():
+        import json
+        outcomes = [json.loads(x) for x in op.read_text(encoding="utf-8").splitlines() if x.strip()]
+    cal = calibration_review(outcomes)
     return {
         "ok": True,
         "date": date,
@@ -53,4 +64,21 @@ def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
         "false_positive_estimate": 0.0,
         "missed_opportunity_estimate": 0.0,
         "recommendations": ["Prefer lower-latency adapters and keep live disabled."],
+        "outcome_count": len(outcomes),
+        "correct_count": len([o for o in outcomes if o.get("correctness_label")=="correct"]),
+        "wrong_count": len([o for o in outcomes if o.get("correctness_label")=="wrong"]),
+        "avoided_bad_trade_count": len([o for o in outcomes if o.get("correctness_label")=="avoided_bad_trade"]),
+        "missed_good_trade_count": len([o for o in outcomes if o.get("correctness_label")=="missed_good_trade"]),
+        "inconclusive_count": len([o for o in outcomes if o.get("correctness_label") in {"inconclusive","data_unavailable"}]),
+        "brier_score": cal.get("brier_score"),
+        "calibration_error": cal.get("expected_calibration_error"),
+        "overconfidence_rate": cal.get("overconfidence_rate"),
+        "top_error_types": Counter([o.get("error_type","unknown") for o in outcomes]).most_common(5),
+        "top_lessons": [],
+        "experience_added_count": 0,
+        "feedback_count": fb.get("feedback_count", 0),
+        "feedback_supported_count": fb.get("feedback_supported_count", 0),
+        "feedback_rejected_count": fb.get("feedback_rejected_count", 0),
+        "best_experience_tags": [],
+        "worst_experience_tags": [],
     }

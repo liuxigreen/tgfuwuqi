@@ -5,3 +5,7 @@ __pycache__/
 data/trade_core_journal/*.jsonl
 data/self_evolution/*.json
 data/daily_limits_state.json
+data/decision_snapshots/*.jsonl
+data/outcomes/*.jsonl
+data/experience_store/*.jsonl
+data/feedback/*.jsonl

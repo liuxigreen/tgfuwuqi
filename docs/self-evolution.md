@@ -5,3 +5,7 @@
 - 输出 `proposed_changes`，不自动应用。
 - 禁止自动增加风险、禁止自动启用 live。
 - 通过 journal/replay/report 辅助人工优化。
+
+## Learning Loop inputs
+- Self-evolution now consumes outcome/review/experience/feedback/calibration summaries.
+- It still outputs `proposed_changes` only and never auto-applies live config.

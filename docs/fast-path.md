@@ -7,3 +7,7 @@
 - 必须新鲜：market/account。
 - 可降级：sentiment/smartmoney（受配置控制）。
 - 超时处理：超预算降级 propose 或 blocked；demo_auto 不执行。
+
+## Learning Loop integration
+- Fast Path experience retrieval has a hard limit of 200ms.
+- Deep review/AI long reasoning remains outside Fast Path.
