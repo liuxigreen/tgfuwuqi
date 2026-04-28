@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -108,11 +108,15 @@ class AccountSnapshot:
 class TradeDecision:
     action: TradeAction
     symbol: str
+    market_type: str
+    direction: Direction
+    decision_id: str
     final_score: float
     confidence: float
     risk_status: str
     reason_codes: List[str]
     blocked_reasons: List[str]
+    warnings: List[str]
     recommended_size_pct: float
     recommended_leverage: float
     preferred_execution: str
@@ -126,7 +130,7 @@ class OrderIntent:
     side: str
     market_type: str
     size_mode: str
-    size_pct: float
+    size: float
     entry_type: str
     stop_loss_pct: Optional[float]
     take_profit_pct: Optional[float]
@@ -134,6 +138,9 @@ class OrderIntent:
     use_trailing_stop: bool
     dry_run: bool
     reason_codes: List[str]
+    risk_summary: Dict[str, Any]
+    nuwa_version: str
+    decision_id: str
 
 
 @dataclass
@@ -159,6 +166,25 @@ class ExitDecision:
     thesis_status: str
     recommended_reduce_pct: float
     tighten_stop: bool
+
+
+@dataclass
+class PositionExitEvaluation:
+    position_id: str
+    symbol: str
+    side: Direction
+    entry_price: float
+    current_price: float
+    unrealized_pnl_pct: float
+    rr_progress: float
+    thesis_status: str
+    continuation_probability: float
+    smart_money_alignment: str
+    sentiment_alignment: str
+    oi_confirmation: str
+    time_in_position_minutes: int
+    recommended_action: str
+    reason_codes: List[str]
 
 
 def model_to_dict(model: Any) -> Dict[str, Any]:

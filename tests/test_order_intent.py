@@ -1,29 +1,14 @@
-from trade_core.models import OperatingMode, TradeAction, TradeDecision
+from trade_core.models import Direction, OperatingMode, TradeAction, TradeDecision
 from trade_core.order_intent import build_order_intent
 
 
-def base_decision(action: TradeAction):
-    return TradeDecision(
-        action=action,
-        symbol="BTC-USDT-SWAP",
-        final_score=82,
-        confidence=0.8,
-        risk_status="ok",
-        reason_codes=["x"],
-        blocked_reasons=[],
-        recommended_size_pct=1.2,
-        recommended_leverage=2,
-        preferred_execution="dry_run",
-        nuwa_version="v1",
-        mode=OperatingMode.PROPOSE,
-    )
-
-
 def test_default_dry_run():
-    i = build_order_intent(base_decision(TradeAction.PROPOSE))
+    d = TradeDecision(TradeAction.PROPOSE, "BTC-USDT-SWAP", "swap", Direction.LONG, "d", 70, 0.8, "ok", ["x"], [], [], 1.0, 2.0, "dry_run", "v1", OperatingMode.PROPOSE)
+    i = build_order_intent(d)
     assert i.dry_run is True
 
 
 def test_open_has_sl_tp():
-    i = build_order_intent(base_decision(TradeAction.OPEN_LONG))
+    d = TradeDecision(TradeAction.OPEN_LONG, "BTC-USDT-SWAP", "swap", Direction.LONG, "d", 85, 0.8, "ok", ["x"], [], [], 1.0, 2.0, "dry_run", "v1", OperatingMode.PROPOSE)
+    i = build_order_intent(d)
     assert i.stop_loss_pct is not None and i.take_profit_pct is not None

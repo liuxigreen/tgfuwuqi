@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import Optional
 
 from .config import load_config
@@ -17,13 +18,12 @@ from .models import (
 )
 from .risk import apply_risk_rules
 from .scoring import compute_score
+from .utils import is_stale
 
 
 def _to_mode(mode: str | OperatingMode) -> OperatingMode:
-    if isinstance(mode, OperatingMode):
-        return mode
     try:
-        return OperatingMode(mode)
+        return mode if isinstance(mode, OperatingMode) else OperatingMode(mode)
     except Exception:
         return OperatingMode.PROPOSE
 
@@ -50,22 +50,43 @@ def build_trade_decision(
 ) -> TradeDecision:
     cfg = config or load_config()
     run_mode = _to_mode(mode)
+    warnings = []
+    blocked_reasons = []
+
+    snapshots = [market_snapshot, sentiment_snapshot, smartmoney_snapshot]
+    if any(s is not None and s.symbol != radar_signal.symbol for s in snapshots):
+        blocked_reasons.append("symbol_mismatch")
+
+    max_age = int(cfg["operating_modes"].get("max_snapshot_age_minutes", 15))
+    for name, ts in [
+        ("radar", radar_signal.timestamp),
+        ("market", getattr(market_snapshot, "timestamp", "")),
+        ("sentiment", getattr(sentiment_snapshot, "timestamp", "")),
+        ("smartmoney", getattr(smartmoney_snapshot, "timestamp", "")),
+    ]:
+        if not ts:
+            continue
+        stale, err = is_stale(ts, max_age)
+        if err:
+            if run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED}:
+                blocked_reasons.append(f"{name}_timestamp_invalid")
+            else:
+                warnings.append(f"{name}_timestamp_invalid")
+        elif stale:
+            if run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED}:
+                blocked_reasons.append(f"{name}_snapshot_stale")
+            else:
+                warnings.append(f"{name}_snapshot_stale")
+
+    if account_snapshot is not None:
+        stale, err = is_stale(account_snapshot.timestamp, max_age)
+        if err and run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED}:
+            blocked_reasons.append("account_timestamp_invalid")
+        elif stale and run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED}:
+            blocked_reasons.append("account_snapshot_stale")
 
     if nuwa_eval.block_trade:
-        return TradeDecision(
-            action=TradeAction.BLOCKED,
-            symbol=radar_signal.symbol,
-            final_score=0.0,
-            confidence=nuwa_eval.confidence,
-            risk_status="blocked",
-            reason_codes=["nuwa_block_trade"],
-            blocked_reasons=["nuwa_block_trade"],
-            recommended_size_pct=0.0,
-            recommended_leverage=1.0,
-            preferred_execution="none",
-            nuwa_version=nuwa_eval.version,
-            mode=run_mode,
-        )
+        blocked_reasons.append("nuwa_block_trade")
 
     breakdown = compute_score(
         radar_signal,
@@ -75,32 +96,27 @@ def build_trade_decision(
         smartmoney_snapshot=smartmoney_snapshot,
         weights=cfg["scoring_weights"],
     )
+    warnings.extend(breakdown.warnings)
 
     action = _score_to_action(breakdown.total_score, radar_signal.direction)
+    if any("snapshot_stale" in w or "timestamp_invalid" in w for w in warnings):
+        action = TradeAction.OBSERVE
+
     size_pct = 2.0 if action in {TradeAction.OPEN_LONG, TradeAction.OPEN_SHORT} else 1.0
     if action == TradeAction.SMALL_PROBE:
         size_pct = 0.8
     leverage = 2.0
 
-    pa = (nuwa_eval.preferred_action or "").lower()
+    pref = (nuwa_eval.preferred_action or "").lower()
     reason_codes = list(breakdown.reason_codes)
-    if pa == "wait_pullback" and action in {TradeAction.OPEN_LONG, TradeAction.OPEN_SHORT, TradeAction.SMALL_PROBE}:
+    if pref == "wait_pullback" and action in {TradeAction.OPEN_LONG, TradeAction.OPEN_SHORT, TradeAction.SMALL_PROBE}:
         action = TradeAction.PROPOSE
-        reason_codes.append("nuwa_wait_pullback")
         size_pct = min(size_pct, 0.8)
-    elif pa == "small_probe":
-        if action in {TradeAction.OPEN_LONG, TradeAction.OPEN_SHORT}:
-            action = TradeAction.SMALL_PROBE
-        size_pct = min(size_pct, 1.0)
-        reason_codes.append("nuwa_small_probe")
-    elif pa == "observe":
+        reason_codes.append("nuwa_wait_pullback")
+    if pref == "observe":
         action = TradeAction.OBSERVE
-        size_pct = 0.0
-        reason_codes.append("nuwa_observe")
-    elif pa == "block":
-        action = TradeAction.BLOCKED
-        size_pct = 0.0
-        reason_codes.append("nuwa_block_preferred")
+    if pref == "block":
+        blocked_reasons.append("nuwa_block_preferred")
 
     risk = apply_risk_rules(
         nuwa_eval=nuwa_eval,
@@ -113,23 +129,23 @@ def build_trade_decision(
         allow_live_execution=bool(cfg["operating_modes"].get("allow_live_execution", False)),
         risk_limits=cfg["risk_limits"],
     )
-    if risk.risk_status == "blocked":
+    blocked_reasons.extend(risk.blocked_reasons)
+    if blocked_reasons:
         action = TradeAction.BLOCKED
 
-    preferred_execution = "dry_run"
-    if run_mode == OperatingMode.DEMO_AUTO:
-        preferred_execution = "demo_dry_run"
-    elif run_mode == OperatingMode.LIVE_GUARDED:
-        preferred_execution = "guarded_intent_only"
-
+    preferred_execution = "demo_dry_run" if run_mode == OperatingMode.DEMO_AUTO else "dry_run"
     return TradeDecision(
         action=action,
         symbol=radar_signal.symbol,
+        market_type=radar_signal.market_type,
+        direction=radar_signal.direction,
+        decision_id=f"dec_{uuid.uuid4().hex[:12]}",
         final_score=breakdown.total_score,
         confidence=round((nuwa_eval.confidence + radar_signal.score / 100) / 2, 4),
-        risk_status=risk.risk_status,
+        risk_status="blocked" if blocked_reasons else risk.risk_status,
         reason_codes=sorted(set(reason_codes)),
-        blocked_reasons=risk.blocked_reasons,
+        blocked_reasons=sorted(set(blocked_reasons)),
+        warnings=sorted(set(warnings)),
         recommended_size_pct=risk.risk_adjusted_size_pct,
         recommended_leverage=min(leverage, float(cfg["risk_limits"].get("max_leverage", 3))),
         preferred_execution=preferred_execution,

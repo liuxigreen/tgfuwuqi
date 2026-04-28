@@ -18,16 +18,29 @@ DEFAULTS: Dict[str, Any] = {
         "max_hold_minutes": 720,
     },
     "scoring_weights": {
-        "radar": 0.25,
-        "market": 0.20,
-        "sentiment": 0.15,
-        "smartmoney": 0.20,
-        "nuwa": 0.20,
+        "market_score": 0.15,
+        "oi_score": 0.20,
+        "funding_score": 0.10,
+        "sentiment_score": 0.15,
+        "smart_money_score": 0.20,
+        "nuwa_score": 0.20,
+        "risk_penalty": 0.20,
     },
     "operating_modes": {
         "default_mode": "propose",
         "default_dry_run": True,
         "allow_live_execution": False,
+        "max_snapshot_age_minutes": 15,
+    },
+    "okx_gateway": {
+        "backend": "mock",
+        "profile": "demo",
+        "default_demo": True,
+        "allow_live": False,
+        "allow_trade_execution": False,
+        "command_timeout_seconds": 20,
+        "max_slippage_pct": 0.003,
+        "required_profile_for_execution": "demo",
     },
 }
 
@@ -68,15 +81,19 @@ def load_config(config_dir: Path | None = None) -> Dict[str, Any]:
     risk = {**DEFAULTS["risk_limits"], **load_simple_yaml(cfg_dir / "risk_limits.yaml")}
     weights = {**DEFAULTS["scoring_weights"], **load_simple_yaml(cfg_dir / "scoring_weights.yaml")}
     modes = {**DEFAULTS["operating_modes"], **load_simple_yaml(cfg_dir / "operating_modes.yaml")}
-    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes}
+    okx = {**DEFAULTS["okx_gateway"], **load_simple_yaml(cfg_dir / "okx_gateway.yaml")}
+    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes, "okx_gateway": okx}
 
 
 def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
     errors = []
     weights = config.get("scoring_weights", {})
-    total_weight = sum(float(weights.get(k, 0)) for k in ["radar", "market", "sentiment", "smartmoney", "nuwa"])
+    required = ["market_score", "oi_score", "funding_score", "sentiment_score", "smart_money_score", "nuwa_score"]
+    total_weight = sum(float(weights.get(k, 0)) for k in required)
     if abs(total_weight - 1.0) > 1e-6:
         errors.append(f"scoring_weights_sum_invalid:{total_weight}")
     if config.get("risk_limits", {}).get("max_leverage", 0) > 3:
         errors.append("max_leverage_gt_3")
+    if config.get("okx_gateway", {}).get("allow_live"):
+        errors.append("allow_live_must_be_false")
     return {"ok": not errors, "errors": errors, "config": config}

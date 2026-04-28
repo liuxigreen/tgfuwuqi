@@ -1,0 +1,9 @@
+{
+  "radar_signal": {"symbol": "ETH-USDT-SWAP", "market_type": "swap", "direction": "short", "score": 74, "source": "radar.v1", "timestamp": "2026-04-28T09:30:00Z", "features": {}},
+  "nuwa_eval": {"version": "nuwa-2026.04", "market_regime": "trend", "signal_archetype": "reversal", "signal_quality": 0.68, "continuation_probability": 0.7, "manipulation_risk": 0.25, "preferred_action": "small_probe", "block_trade": false, "confidence": 0.76, "notes": "short swap"},
+  "market_snapshot": {"symbol": "ETH-USDT-SWAP", "price": 3200, "price_change_24h_pct": -2.1, "volume_change_pct": 10, "funding_rate": 0.0001, "open_interest_change_pct": 6, "volatility_score": 0.6, "liquidity_score": 0.8, "timestamp": "2026-04-28T09:31:00Z"},
+  "sentiment_snapshot": {"symbol": "ETH-USDT-SWAP", "sentiment_score": 0.4, "sentiment_trend": "down", "abnormal_sentiment_shift": false, "news_risk": 0.2, "timestamp": "2026-04-28T09:31:00Z"},
+  "smartmoney_snapshot": {"symbol": "ETH-USDT-SWAP", "consensus_direction": "short", "weighted_direction": "short", "avg_win_rate": 0.59, "long_short_ratio": 0.8, "smart_money_trend": "distribute", "entry_vwap": 3250, "current_price": 3200, "premium_discount_pct": -0.4, "timestamp": "2026-04-28T09:31:00Z"},
+  "account_snapshot": {"equity_usdt": 10000, "available_usdt": 8500, "daily_pnl_pct": -0.5, "open_positions_count": 1, "same_symbol_existing_position": false, "total_exposure_pct": 20, "max_position_exposure_pct": 10, "timestamp": "2026-04-28T09:31:00Z"},
+  "mode": "propose"
+}
