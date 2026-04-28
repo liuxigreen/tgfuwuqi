@@ -1,0 +1,25 @@
+skills:
+  okx-cex-market:
+    source: official
+    category: market
+  okx-cex-trade:
+    source: official
+    category: execution
+  okx-cex-portfolio:
+    source: official
+    category: portfolio
+  okx-cex-bot:
+    source: official
+    category: secondary
+  okx-cex-earn:
+    source: official
+    category: secondary
+  okx-cex-smartmoney:
+    source: official
+    category: smartmoney
+  okx-news-sentiment-wrapper:
+    source: local_custom
+    category: sentiment
+  nuwa-runtime:
+    source: local
+    category: decision_support

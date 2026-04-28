@@ -3,8 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict
 
-DEFAULT_CONFIG_DIR = Path(__file__).resolve().parent.parent / "configs"
+try:
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover
+    yaml = None
 
+DEFAULT_CONFIG_DIR = Path(__file__).resolve().parent.parent / "configs"
 
 DEFAULTS: Dict[str, Any] = {
     "risk_limits": {
@@ -55,93 +59,150 @@ DEFAULTS: Dict[str, Any] = {
     "nuwa_runtime": {
         "default_nuwa_version": "nuwa_default_v1",
         "min_confidence_for_demo_auto": 0.65,
+        "fast_path": {"enabled": True, "timeout_ms": 800, "fallback_to_conservative": True, "min_confidence_for_demo_auto": 0.65},
+        "deep_path": {"enabled": True, "run_in_fast_path": False, "output_proposed_changes_only": True},
         "versions": {},
     },
-
-    "latency": {"fast_path_target_total_ms": 4000, "fast_path_hard_timeout_ms": 5000, "allow_degraded_mode": True, "require_account_for_execution": True, "require_market_for_execution": True, "allow_missing_sentiment_in_propose": True, "allow_missing_smartmoney_in_propose": True, "allow_missing_sentiment_in_demo_auto": False, "allow_missing_smartmoney_in_demo_auto": False},
+    "latency": {
+        "fast_path": {
+            "target_total_ms": 4000,
+            "hard_timeout_ms": 5000,
+            "adapter_timeout_ms": 900,
+            "market_timeout_ms": 700,
+            "oi_funding_timeout_ms": 900,
+            "account_timeout_ms": 800,
+            "sentiment_timeout_ms": 1000,
+            "smartmoney_timeout_ms": 1000,
+            "nuwa_fast_timeout_ms": 800,
+            "scoring_timeout_ms": 200,
+            "risk_timeout_ms": 200,
+            "order_intent_timeout_ms": 200,
+            "execution_timeout_ms": 1200,
+            "allow_degraded_mode": True,
+            "require_account_for_execution": True,
+            "require_market_for_execution": True,
+            "allow_missing_sentiment_in_propose": True,
+            "allow_missing_smartmoney_in_propose": True,
+            "allow_missing_sentiment_in_demo_auto": False,
+            "allow_missing_smartmoney_in_demo_auto": False,
+        },
+        "slow_path": {"daily_review_enabled": True, "replay_enabled": True, "skill_metrics_enabled": True, "deep_nuwa_enabled": True, "exit_optimization_enabled": True},
+    },
     "cache": {"ttl_ticker": 1, "ttl_account": 10, "ttl_sentiment": 60, "ttl_smartmoney": 60},
-    "daily_limits": {"enabled": True, "max_trades_per_day": 8, "max_daily_loss_pct": 2.0, "max_consecutive_losses": 3, "symbol_cooldown_minutes": 60},
+    "daily_limits": {"enabled": True, "max_trades_per_day": 8, "max_daily_loss_pct": 2.0, "max_consecutive_losses": 3, "symbol_cooldown_minutes": 60, "allow_position_exit_when_disabled": True},
+    "skill_registry": {"skills": []},
+    "skill_intelligence": {"auto_discovery": True, "auto_install": False, "auto_enable_new_skills": False, "disable_live_trade_skills": True},
+    "exit_policy_templates": {"templates": {}},
+    "exit_optimization": {"enabled": True, "min_trades_per_policy": 20, "min_days": 7, "requires_human_approval": True, "forbid_auto_apply": True, "max_allowed_stop_loss_pct": 0.035},
 }
 
 
-def _parse_scalar(value: str) -> Any:
-    v = value.strip()
-    if v.lower() in {"true", "false"}:
-        return v.lower() == "true"
-    if v.startswith("[") and v.endswith("]"):
-        inner = v[1:-1].strip()
-        if not inner:
-            return []
-        return [x.strip().strip('"').strip("'") for x in inner.split(",")]
+def _parse_scalar(v: str) -> Any:
+    s = str(v).strip()
+    if s.lower() in {"true", "false"}:
+        return s.lower() == "true"
+    if s.startswith("[") and s.endswith("]"):
+        inner = s[1:-1].strip()
+        return [] if not inner else [x.strip().strip('"').strip("'") for x in inner.split(",")]
     try:
-        if "." in v:
-            return float(v)
-        return int(v)
+        return float(s) if "." in s else int(s)
     except ValueError:
-        return v.strip('"').strip("'")
+        return s.strip('"').strip("'")
 
 
-def load_simple_yaml(path: Path) -> Dict[str, Any]:
+def _simple_nested_yaml(path: Path) -> Dict[str, Any]:
     if not path.exists():
         return {}
-    result: Dict[str, Any] = {}
+    root: Dict[str, Any] = {}
+    stack = [(0, root)]
     for raw in path.read_text(encoding="utf-8").splitlines():
         line = raw.split("#", 1)[0].rstrip()
-        if not line or ":" not in line:
+        if not line.strip():
             continue
-        key, value = line.split(":", 1)
+        indent = len(line) - len(line.lstrip(" "))
+        text = line.strip()
+        while len(stack) > 1 and indent < stack[-1][0]:
+            stack.pop()
+        cur = stack[-1][1]
+        if text.startswith("- "):
+            # unsupported list item nesting in fallback
+            continue
+        if ":" not in text:
+            continue
+        key, val = text.split(":", 1)
         key = key.strip()
-        result[key] = _parse_scalar(value)
-    return result
+        val = val.strip()
+        if not val:
+            cur[key] = {}
+            stack.append((indent + 2, cur[key]))
+        else:
+            cur[key] = _parse_scalar(val)
+    return root
 
 
-def load_nuwa_runtime(path: Path) -> Dict[str, Any]:
-    cfg = {**DEFAULTS["nuwa_runtime"]}
+def load_yaml(path: Path) -> Dict[str, Any]:
     if not path.exists():
-        return cfg
-    lines = [l.rstrip("\n") for l in path.read_text(encoding="utf-8").splitlines() if l.strip() and not l.strip().startswith("#")]
-    current_version = None
-    versions: Dict[str, Dict[str, Any]] = {}
-    for line in lines:
-        if line.startswith("default_nuwa_version:"):
-            cfg["default_nuwa_version"] = _parse_scalar(line.split(":", 1)[1])
-        elif line.startswith("min_confidence_for_demo_auto:"):
-            cfg["min_confidence_for_demo_auto"] = float(_parse_scalar(line.split(":", 1)[1]))
-        elif line.strip() == "versions:":
-            continue
-        elif line.startswith("  ") and line.endswith(":") and not line.startswith("    "):
-            current_version = line.strip()[:-1]
-            versions[current_version] = {}
-        elif line.startswith("    ") and current_version and ":" in line:
-            k, v = line.strip().split(":", 1)
-            versions[current_version][k] = _parse_scalar(v)
-    cfg["versions"] = versions
-    return cfg
+        return {}
+    if yaml is not None:
+        loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return loaded or {}
+    return _simple_nested_yaml(path)
+
+
+def _merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(base)
+    for k, v in (override or {}).items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = _merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
+def _latency_compat(lat: Dict[str, Any]) -> Dict[str, Any]:
+    fp = lat.get("fast_path", {})
+    compat = {
+        "fast_path_target_total_ms": fp.get("target_total_ms", 4000),
+        "fast_path_hard_timeout_ms": fp.get("hard_timeout_ms", 5000),
+    }
+    compat.update(fp)
+    return compat
 
 
 def load_config(config_dir: Path | None = None) -> Dict[str, Any]:
     cfg_dir = config_dir or DEFAULT_CONFIG_DIR
-    risk = {**DEFAULTS["risk_limits"], **load_simple_yaml(cfg_dir / "risk_limits.yaml")}
-    weights = {**DEFAULTS["scoring_weights"], **load_simple_yaml(cfg_dir / "scoring_weights.yaml")}
-    modes = {**DEFAULTS["operating_modes"], **load_simple_yaml(cfg_dir / "operating_modes.yaml")}
-    okx = {**DEFAULTS["okx_gateway"], **load_simple_yaml(cfg_dir / "okx_gateway.yaml")}
-    exit_rules = {**DEFAULTS["exit_rules"], **load_simple_yaml(cfg_dir / "exit_rules.yaml")}
-    nuwa_runtime = load_nuwa_runtime(cfg_dir / "nuwa_runtime.yaml")
-    latency = {**DEFAULTS["latency"], **load_simple_yaml(cfg_dir / "latency.yaml")}
-    cache = {**DEFAULTS["cache"], **load_simple_yaml(cfg_dir / "cache.yaml")}
-    daily = {**DEFAULTS["daily_limits"], **load_simple_yaml(cfg_dir / "daily_limits.yaml")}
-    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes, "okx_gateway": okx, "exit_rules": exit_rules, "nuwa_runtime": nuwa_runtime, "latency": latency, "cache": cache, "daily_limits": daily}
+    cfg = {
+        "risk_limits": _merge(DEFAULTS["risk_limits"], load_yaml(cfg_dir / "risk_limits.yaml")),
+        "scoring_weights": _merge(DEFAULTS["scoring_weights"], load_yaml(cfg_dir / "scoring_weights.yaml")),
+        "operating_modes": _merge(DEFAULTS["operating_modes"], load_yaml(cfg_dir / "operating_modes.yaml")),
+        "okx_gateway": _merge(DEFAULTS["okx_gateway"], load_yaml(cfg_dir / "okx_gateway.yaml")),
+        "exit_rules": _merge(DEFAULTS["exit_rules"], load_yaml(cfg_dir / "exit_rules.yaml")),
+        "nuwa_runtime": _merge(DEFAULTS["nuwa_runtime"], load_yaml(cfg_dir / "nuwa_runtime.yaml")),
+        "latency_structured": _merge(DEFAULTS["latency"], load_yaml(cfg_dir / "latency.yaml")),
+        "cache": _merge(DEFAULTS["cache"], load_yaml(cfg_dir / "cache.yaml")),
+        "daily_limits": _merge(DEFAULTS["daily_limits"], load_yaml(cfg_dir / "daily_limits.yaml")),
+        "skill_registry": _merge(DEFAULTS["skill_registry"], load_yaml(cfg_dir / "skill_registry.yaml")),
+        "skill_intelligence": _merge(DEFAULTS["skill_intelligence"], load_yaml(cfg_dir / "skill_intelligence.yaml")),
+        "exit_policy_templates": _merge(DEFAULTS["exit_policy_templates"], load_yaml(cfg_dir / "exit_policy_templates.yaml")),
+        "exit_optimization": _merge(DEFAULTS["exit_optimization"], load_yaml(cfg_dir / "exit_optimization.yaml")),
+    }
+    cfg["latency"] = _latency_compat(cfg["latency_structured"])
+    return cfg
 
 
 def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
     errors = []
-    weights = config.get("scoring_weights", {})
+    w = config.get("scoring_weights", {})
     required = ["market_score", "oi_score", "funding_score", "sentiment_score", "smart_money_score", "nuwa_score"]
-    total_weight = sum(float(weights.get(k, 0)) for k in required)
-    if abs(total_weight - 1.0) > 1e-6:
-        errors.append(f"scoring_weights_sum_invalid:{total_weight}")
+    tw = sum(float(w.get(k, 0)) for k in required)
+    if abs(tw - 1.0) > 1e-6:
+        errors.append(f"scoring_weights_sum_invalid:{tw}")
     if config.get("risk_limits", {}).get("max_leverage", 0) > 3:
         errors.append("max_leverage_gt_3")
     if config.get("okx_gateway", {}).get("allow_live"):
         errors.append("allow_live_must_be_false")
+    if config.get("latency_structured", {}).get("fast_path", {}).get("target_total_ms") != 4000:
+        errors.append("latency_target_total_ms_invalid")
+    if float(config.get("daily_limits", {}).get("max_daily_loss_pct", 0)) <= 0:
+        errors.append("daily_limits_max_daily_loss_pct_invalid")
     return {"ok": not errors, "errors": errors, "config": config}

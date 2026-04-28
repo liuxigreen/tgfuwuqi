@@ -1,0 +1,9 @@
+enabled: true
+min_trades_per_policy: 20
+min_days: 7
+optimize_for: calmar_then_profit_factor
+max_allowed_stop_loss_pct: 0.035
+min_profit_factor_for_promotion: 1.2
+max_drawdown_limit_pct: 8.0
+requires_human_approval: true
+forbid_auto_apply: true

@@ -57,6 +57,7 @@ def run_fast_signal_pipeline(signal_or_sample: Dict[str, Any], mode: str = 'prop
     result['cache_status'] = fast_ctx.cache_status
     result['missing_inputs'] = fast_ctx.missing_inputs
     result['nuwa_mode'] = 'fast'
+    result['fast_context_used'] = True
     result['execution_allowed'] = result.get('execution_allowed', not critical_missing)
     result['execution_blocked_reason'] = result.get('execution_blocked_reason', [])
 

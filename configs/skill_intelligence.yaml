@@ -1,0 +1,10 @@
+auto_discovery: true
+auto_install: false
+auto_enable_new_skills: false
+allow_marketplace_scrape: true
+allow_official_github_check: true
+default_new_skill_status: candidate
+max_skill_risk_for_auto_enable: read_only
+require_demo_validation_before_execution: true
+require_user_approval_for_install: true
+disable_live_trade_skills: true

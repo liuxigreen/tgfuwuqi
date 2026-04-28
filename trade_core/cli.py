@@ -15,6 +15,11 @@ from .reporting import build_daily_report
 from .replay import replay_case, replay_journal
 from .scout import run_scout
 from .self_evolution import build_proposal, daily_review, save_proposal, validate_proposal
+from .self_evolution.performance_metrics import compute_performance_metrics
+from .exit_policy import evaluate_exit_policies, list_templates, propose_exit_policy_changes
+from .skill_intelligence import evaluate_skills, load_skill_registry, route_skill_recipe
+from .skill_intelligence.metrics import build_skill_metrics
+from .skill_intelligence.updater import update_skills_registry
 from .signal_bus import parse_case_payload
 
 
@@ -49,6 +54,14 @@ def main() -> None:
     rp = sub.add_parser("report"); rp.add_argument("--journal", required=True)
     dr = sub.add_parser("daily-review"); dr.add_argument("--date", required=True)
     se = sub.add_parser("self-evolve"); se.add_argument("--date", required=True)
+    pr = sub.add_parser("performance-review"); pr.add_argument("--journal", required=True)
+    sub.add_parser("exit-policy-list")
+    epe = sub.add_parser("exit-policy-evaluate"); epe.add_argument("--journal", required=True)
+    epo = sub.add_parser("exit-policy-optimize"); epo.add_argument("--journal", required=True)
+    sub.add_parser("skills-update")
+    sub.add_parser("skills-evaluate")
+    sr = sub.add_parser("skills-route"); sr.add_argument("--task", required=True); sr.add_argument("--mode", default="propose")
+    sm = sub.add_parser("skills-metrics"); sm.add_argument("--journal", required=True)
 
     args = parser.parse_args(); config = load_config()
 
@@ -100,6 +113,27 @@ def main() -> None:
         guard = validate_proposal(prop)
         path = save_proposal(args.date, prop)
         print(json.dumps({**prop, "guardrails": guard, "proposal_path": path}, ensure_ascii=False)); return
+
+    if args.cmd == "exit-policy-list": print(json.dumps({"templates": list_templates(config)}, ensure_ascii=False)); return
+    if args.cmd == "performance-review":
+        summary = review_journal(args.journal)
+        trades = summary.get("trades", []) if isinstance(summary, dict) else []
+        print(json.dumps(compute_performance_metrics(trades), ensure_ascii=False)); return
+    if args.cmd == "exit-policy-evaluate":
+        summary = review_journal(args.journal)
+        trades = summary.get("trades", []) if isinstance(summary, dict) else []
+        print(json.dumps(evaluate_exit_policies(trades, [], list(list_templates(config).keys()), int(config.get("exit_optimization", {}).get("min_trades_per_policy", 20))), ensure_ascii=False)); return
+    if args.cmd == "exit-policy-optimize":
+        summary = review_journal(args.journal)
+        trades = summary.get("trades", []) if isinstance(summary, dict) else []
+        ev = evaluate_exit_policies(trades, [], list(list_templates(config).keys()), int(config.get("exit_optimization", {}).get("min_trades_per_policy", 20)))
+        print(json.dumps(propose_exit_policy_changes(ev, config=config), ensure_ascii=False)); return
+    if args.cmd == "skills-update": print(json.dumps(update_skills_registry(), ensure_ascii=False)); return
+    if args.cmd == "skills-evaluate": print(json.dumps(evaluate_skills(load_skill_registry(config)), ensure_ascii=False)); return
+    if args.cmd == "skills-route": print(json.dumps(route_skill_recipe(args.task, args.mode), ensure_ascii=False)); return
+    if args.cmd == "skills-metrics":
+        summary = review_journal(args.journal)
+        print(json.dumps(build_skill_metrics(summary.get("events", []) if isinstance(summary, dict) else []), ensure_ascii=False)); return
 
 
 if __name__ == "__main__":

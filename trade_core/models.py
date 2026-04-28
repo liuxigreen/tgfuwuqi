@@ -142,6 +142,13 @@ class OrderIntent:
     risk_summary: Dict[str, Any]
     nuwa_version: str
     decision_id: str
+    exit_policy_id: Optional[str] = None
+    first_take_profit_pct: Optional[float] = None
+    final_take_profit_pct: Optional[float] = None
+    partial_take_profit_pct: Optional[float] = None
+    trailing_stop: Optional[Dict[str, Any]] = None
+    time_stop_minutes: Optional[int] = None
+    exit_reason_plan: Optional[List[str]] = None
 
 
 @dataclass
