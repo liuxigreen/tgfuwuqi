@@ -1,9 +1,9 @@
 # Safety
 
-- no live by default
-- demo only path for execution
-- profile gating (`demo` required)
-- `allow_trade_execution` gate must be true for demo execution
-- API key never committed
-- journal redaction enabled
-- kill switch: TODO
+- no live auto trading
+- demo only execution path by default
+- daily limits / max daily loss / cooldown
+- 4s latency gate for demo_auto
+- sub-account recommended
+- no API key in chat/repo/journal
+- no natural-language execution protocol inside trade_core

@@ -1,0 +1,56 @@
+from __future__ import annotations
+
+from collections import Counter
+from typing import Dict
+
+from .metrics import load_events_for_date
+
+
+def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
+    events = load_events_for_date(date, journal_dir)
+    if not events:
+        return {"ok": False, "warning": "no_journal_for_date", "date": date}
+    decisions = [e for e in events if e.get('event_type') == 'decision']
+    actions = Counter([d.get('payload', {}).get('action', 'unknown') for d in decisions])
+    lat = [d.get('payload', {}).get('latency_summary', {}).get('total_ms', 0) for d in decisions]
+    lat = [x for x in lat if isinstance(x, (int, float))]
+    lat_sorted = sorted(lat)
+    p95 = lat_sorted[int(0.95 * (len(lat_sorted)-1))] if lat_sorted else 0
+    return {
+        "ok": True,
+        "date": date,
+        "total_signals": len(decisions),
+        "total_decisions": len(decisions),
+        "total_orders": len([e for e in events if e.get('event_type') == 'order_intent']),
+        "demo_orders": len([e for e in events if e.get('event_type') == 'execution_result' and e.get('payload', {}).get('dry_run') is False]),
+        "dry_run_orders": len([e for e in events if e.get('event_type') == 'execution_result' and e.get('payload', {}).get('dry_run') is True]),
+        "blocked_count": actions.get('blocked', 0),
+        "observe_count": actions.get('observe', 0),
+        "small_probe_count": actions.get('small_probe', 0),
+        "open_count": actions.get('open_long', 0) + actions.get('open_short', 0),
+        "exit_count": actions.get('close', 0),
+        "win_count": 0,
+        "loss_count": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_pnl_usdt": 0.0,
+        "total_pnl_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "avg_R": 0.0,
+        "avg_latency_ms": sum(lat)/len(lat) if lat else 0,
+        "p95_latency_ms": p95,
+        "timeout_count": len([d for d in decisions if 'latency_budget_exceeded' in d.get('payload', {}).get('reason_codes', [])]),
+        "degraded_mode_count": len([d for d in decisions if d.get('payload', {}).get('degraded_mode')]),
+        "top_symbols": Counter([d.get('symbol') for d in decisions]).most_common(5),
+        "worst_symbols": [],
+        "best_recipes": [],
+        "worst_recipes": [],
+        "best_nuwa_version": None,
+        "worst_nuwa_version": None,
+        "best_skill_combo": None,
+        "worst_skill_combo": None,
+        "top_blocked_reasons": Counter([r for d in decisions for r in d.get('payload', {}).get('blocked_reasons', [])]).most_common(5),
+        "false_positive_estimate": 0.0,
+        "missed_opportunity_estimate": 0.0,
+        "recommendations": ["Prefer lower-latency adapters and keep live disabled."],
+    }

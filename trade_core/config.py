@@ -57,6 +57,10 @@ DEFAULTS: Dict[str, Any] = {
         "min_confidence_for_demo_auto": 0.65,
         "versions": {},
     },
+
+    "latency": {"fast_path_target_total_ms": 4000, "fast_path_hard_timeout_ms": 5000, "allow_degraded_mode": True, "require_account_for_execution": True, "require_market_for_execution": True, "allow_missing_sentiment_in_propose": True, "allow_missing_smartmoney_in_propose": True, "allow_missing_sentiment_in_demo_auto": False, "allow_missing_smartmoney_in_demo_auto": False},
+    "cache": {"ttl_ticker": 1, "ttl_account": 10, "ttl_sentiment": 60, "ttl_smartmoney": 60},
+    "daily_limits": {"enabled": True, "max_trades_per_day": 8, "max_daily_loss_pct": 2.0, "max_consecutive_losses": 3, "symbol_cooldown_minutes": 60},
 }
 
 
@@ -123,7 +127,10 @@ def load_config(config_dir: Path | None = None) -> Dict[str, Any]:
     okx = {**DEFAULTS["okx_gateway"], **load_simple_yaml(cfg_dir / "okx_gateway.yaml")}
     exit_rules = {**DEFAULTS["exit_rules"], **load_simple_yaml(cfg_dir / "exit_rules.yaml")}
     nuwa_runtime = load_nuwa_runtime(cfg_dir / "nuwa_runtime.yaml")
-    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes, "okx_gateway": okx, "exit_rules": exit_rules, "nuwa_runtime": nuwa_runtime}
+    latency = {**DEFAULTS["latency"], **load_simple_yaml(cfg_dir / "latency.yaml")}
+    cache = {**DEFAULTS["cache"], **load_simple_yaml(cfg_dir / "cache.yaml")}
+    daily = {**DEFAULTS["daily_limits"], **load_simple_yaml(cfg_dir / "daily_limits.yaml")}
+    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes, "okx_gateway": okx, "exit_rules": exit_rules, "nuwa_runtime": nuwa_runtime, "latency": latency, "cache": cache, "daily_limits": daily}
 
 
 def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:

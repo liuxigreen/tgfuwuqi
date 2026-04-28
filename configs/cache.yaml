@@ -1,0 +1,9 @@
+ttl_ticker: 1
+ttl_candles: 10
+ttl_funding: 30
+ttl_open_interest: 30
+ttl_account: 10
+ttl_positions: 5
+ttl_sentiment: 60
+ttl_smartmoney: 60
+ttl_news: 300

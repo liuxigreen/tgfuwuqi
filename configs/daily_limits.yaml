@@ -1,0 +1,15 @@
+enabled: true
+timezone: UTC
+max_trades_per_day: 8
+max_demo_trades_per_day: 20
+max_losses_per_day: 3
+max_daily_loss_pct: 2.0
+max_daily_loss_usdt: 100
+max_consecutive_losses: 3
+cooldown_after_loss_minutes: 30
+symbol_cooldown_minutes: 60
+max_same_symbol_trades_per_day: 2
+max_open_positions: 3
+max_total_exposure_pct: 30
+disable_new_entries_after_daily_loss: true
+allow_position_exit_when_disabled: true
