@@ -1,6 +1,0 @@
-# AgentHansa Bot Dependencies
-python-telegram-bot==21.0.1
-websockets==12.0
-aiohttp==3.9.1
-PyYAML==6.0.1
-croniter==1.4.1

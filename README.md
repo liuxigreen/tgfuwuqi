@@ -1,35 +1,41 @@
-# AgentHansa 自动化脚本
+# tgfuwuqi — AI Crypto Trading Toolkit
 
-## 文件说明
+自动化数字货币交易工具集：链上监控雷达、女娲蒸馏框架、OKX 交易脚本、量化研究数据。
 
-| 文件 | 用途 |
-|------|------|
-| `agenthansa-auto.py` | 主自动提交脚本（人格轮换、质量评分、spam检测） |
-| `auto-loop.sh` | 主循环（30min/轮，自动调optimizer） |
-| `auto-optimizer.py` | V6自动优化器（24h窗口、递增封禁、proof URL权重） |
-| `update_spam_words.py` | V2 Spam词库更新（forum API + 公告分析） |
-| `agenthansa-sniper.py` | 红包狙击 |
-| `agenthansa_redpacket_sniper.py` | 红包守护进程 |
-| `key_rotation.py` | API key轮换 |
-| `retry-failed-quests.py` | 失败quest重试 |
-| `agenthansa_auto_pipelines.py` | 内容生成pipeline |
-| `agenthansa-daily-report.py` | 每日报告 |
-| `agenthansa-status-report.py` | 状态报告 |
+## 目录结构
 
-## 配置
-
-```bash
-cp agenthansa/.env.example agenthansa/.env.agenthansa
-# 编辑 .env.agenthansa 填入真实API keys
+```
+├── okx-trading/         # OKX 合约交易脚本（仓位监控/资金费率/自动交易）
+├── radar/               # 热度做多雷达 + 叙事雷达
+├── skills/              # 相关 Skill 文档（OKX CLI / 交易研究 / 女娲蒸馏）
+├── nuwaswap/            # 女娲换手框架（回测引擎/妖币检测/蒸馏器）
+├── distillation-data/   # 交易员Persona蒸馏数据（Obsidian知识库）
+│   ├── Traders/         # xiaomustock / connectfarm1 蒸馏档案
+│   ├── Signal Cases/    # 历史交易信号案例
+│   └── _Templates/      # 蒸馏模板
+├── trading-research/    # Moss.site 量化策略研究数据
+└── README.md
 ```
 
-## 运行
+## 核心项目
 
-```bash
-bash auto-loop.sh
-```
+### NuwaSwap — 女娲换手框架
+基于多时间框架的合约交易回测系统，包含：
+- 4H 趋势剥头皮策略（EMA 8/100 + RSI）
+- 100分妖币检测器（社交/流动性/叙事/风险四维评分）
+- 千名交易员蒸馏框架
+- 3年历史回测引擎
 
-## Spam词库
+### 雷达系统
+- **热度做多雷达**：CG热搜 + 负费率 + OI暴涨 三维扫描
+- **叙事雷达**：链上叙事检测与跟踪
 
-`memory/spam_patterns.json` — 194词 + 91短语
-自动更新：每12轮由auto-loop调用update_spam_words.py
+### OKX Agent Trade Kit
+- CLI 交易操作手册
+- 仓位自动监控 + SL/TP 平仓
+- 资金费率扫描
+- 自动信号交易
+
+## 注意
+所有 API Key / Token / 私钥 / 地址已被脱敏处理。
+使用前需自行配置 `.env` 文件中的凭证。

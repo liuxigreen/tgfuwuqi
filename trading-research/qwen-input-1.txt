@@ -1,0 +1,37 @@
+You are a quantitative trading analyst. Analyze these 30 AI trading bots from Moss.site platform.
+
+CONTEXT: These are cryptocurrency futures (USDT-M) trading bots. All use 125-200x leverage. The PnL numbers are simulated (not real capital). Focus on STRATEGY PATTERNS, not absolute returns.
+
+DATA:
+[
+  {"name":"Last Shot Book","persona":"Trend Aggressive BTC operator","pnl":30739743204819,"roi":307397432048,"liquidations":1,"respawns":1,"desc":"Doomsday all-in extreme long strategy. Ultra-high leverage all-in long, continuously pyramids on any profit, bets on one-sided explosive rally."},
+  {"name":"Doomsday Sprint","persona":"Extremely Aggressive, Unilateral Breakout","pnl":117429972101,"roi":1174299721,"liquidations":0,"respawns":0,"desc":"150x leverage, 0.85 long bias. Rolls 80% on 12% profit (up to 4 tiers). Zero mean reversion, pure trend & momentum driven."},
+  {"name":"Doomsday Ultimate","persona":"Hyper Aggressive, Strict Risk Control","pnl":115994303453,"roi":1159943035,"liquidations":0,"respawns":0,"desc":"150-200x trend strategy. Long 0.85. Entry 0.05/Exit 0.12, SL 4ATR/TP 12RR. Roll 80% on 12% profit(max 4 tiers). W:Trend50/Mom35/Vol10/Vola5. Risk 90%. Cut 50% at -2%, flat at -3%. MA5xEMA20. Trail SL 2.5ATR at 4% profit."},
+  {"name":"All-In King","persona":"Extreme All-In 150x 10 Rolls 100% Position","pnl":1664987706,"roi":16649877,"liquidations":0,"respawns":0,"desc":"150x fixed leverage, 100% position, 10x rolling, 50% risk per trade. 10x or zero."},
+  {"name":"Doomsday Gambler Bot 5","persona":"Ultimate High-Frequency Gambler","pnl":85772382,"roi":857724,"liquidations":0,"respawns":0,"desc":"150x leverage ultimate gambling, lower entry threshold and faster response."},
+  {"name":"Table Regular","persona":"Trend Aggressive BTC operator","pnl":68803024,"roi":688030,"liquidations":0,"respawns":0,"desc":"Extreme high-leverage gambler mode. Ultra-high position long, relentless pyramids profits."},
+  {"name":"Apocalypse Warrior","persona":"Extreme Optimistic All-In Trader","pnl":43692937,"roi":436929,"liquidations":0,"respawns":0,"desc":"150x all-in long, 0.85 bias, wide SL 5ATR with 10x TP ratio. Roll on 10% profit, 100% reinvest max 5 times. W:Trend45/Mom30, MA5/20, trail SL activate 3% distance 3ATR."},
+  {"name":"Newbie Bear Escape","persona":"Doomsday Sprint Long Trend","pnl":39791462,"roi":397915,"liquidations":0,"respawns":0,"desc":"150x leverage, 0.85 long bias, 12% profit triggers 80% roll (max 4 tiers). Zero mean reversion, pure trend & momentum."},
+  {"name":"No Tomorrow After Today","persona":"Apocalyptic Sprint","pnl":26946232,"roi":269462,"liquidations":0,"respawns":0,"desc":"150-200x all-in strategy."},
+  {"name":"Newbie Trend Escape v2","persona":"Doomsday Sprint with Regime Protection","pnl":24922099,"roi":249221,"liquidations":0,"respawns":0,"desc":"150x, 0.85 long, 12% profit 80% roll (max 4 tiers). Added regime-switch auto-close (sensitivity 0.40), exits on trend reversal."},
+  {"name":"Act Now","persona":"Aggressive BTC Trend Operator","pnl":12856250,"roi":128563,"liquidations":0,"respawns":0,"desc":"How would you trade if tomorrow were the end of the world?"},
+  {"name":"Bulldozer","persona":"Aggressive Stop-Loss Type","pnl":12396331,"roi":123963,"liquidations":0,"respawns":0,"desc":"125x leverage, long-biased, MA5 cross entry, 4ATR stop 12RR profit, 12% floating profit roll reinvest, single trade risk 90%, signal-driven no hedge."},
+  {"name":"Trend Chaser","persona":"Trend Hunter","pnl":11561680,"roi":115617,"liquidations":0,"respawns":0,"desc":"Cut loss small and fast, let winners run big. 150x, entry0.05, zero mean reversion, pure trend momentum, 4ATR SL, 12RR TP, rolling compound."},
+  {"name":"Roco Kingdom is Fun","persona":"aggressive trend","pnl":10975084,"roi":109751,"liquidations":0,"respawns":0,"desc":"150x pure trend momentum, long bias 0.85, roll on 12% profit, max returns."},
+  {"name":"PassionBTC","persona":"Extreme High Leverage Trend Momentum","pnl":0,"roi":0,"liquidations":0,"respawns":0,"desc":"BTC pure trend momentum, extreme leverage"}
+]
+
+TASK: Identify the 3-5 most STABLE and REPRODUCIBLE strategy patterns. "Stable" means:
+1. Low liquidation count relative to PnL
+2. Clear entry/exit rules (not just "all-in")
+3. Has risk management (not pure gambling)
+4. Could work with REAL capital (not just simulated extreme leverage)
+
+For each pattern, provide:
+- Name
+- Core parameters (leverage, entry, exit, SL, TP, position sizing)
+- When it works best (market conditions)
+- Key risk factors
+- Adaptation mechanism (how to auto-adjust to changing markets)
+
+Save your analysis to /root/.hermes/agenthansa/memory/qwen-research/crypto-round1.md

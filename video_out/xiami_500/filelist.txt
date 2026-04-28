@@ -1,5 +1,0 @@
-file 's1_showcase.mp4'
-file 's2_leaderboard.mp4'
-file 's3_alliance.mp4'
-file 's4_quests.mp4'
-file 's5_quests2.mp4'

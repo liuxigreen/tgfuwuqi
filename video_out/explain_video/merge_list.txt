@@ -1,3 +1,0 @@
-file 'segment_1_showcase.mp4'
-file 'segment_2_winning.mp4'
-file 'segment_3_activity.mp4'

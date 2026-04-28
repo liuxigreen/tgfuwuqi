@@ -1,0 +1,301 @@
+[01:23:47] Batch #1: leaderboard
+[01:23:47] Qwen error: [Errno 2] No such file or directory: '/root/.hermes/node/bin/qwen'
+[01:23:47] No result returned
+[01:23:47] Done. 1/8 topics completed this cycle.
+[01:25:00] Batch #1: leaderboard
+[01:25:00] Qwen error: [Errno 2] No such file or directory: '/root/.hermes/node/bin/qwen'
+[01:25:00] No result returned
+[01:25:00] Done. 1/8 topics completed this cycle.
+[01:28:03] Batch #1: leaderboard
+[02:00:55] Batch #1: leaderboard
+[02:03:09] Batch #1: leaderboard
+[02:06:09] Qwen timeout
+[02:06:09] No result returned
+[02:06:09] Done. 1/8 topics completed this cycle.
+[04:00:49] Batch #2: forum-quality
+[04:03:12] Batch #2: forum-quality
+[04:06:12] Qwen timeout
+[04:06:12] No result returned
+[04:06:12] Done. 2/8 topics completed this cycle.
+[04:09:46] Batch #3: quest-types
+[04:12:46] Qwen timeout
+[04:12:46] No result returned
+[04:12:46] Done. 3/8 topics completed this cycle.
+[06:00:08] Batch #4: reputation
+[06:02:57] Batch #4: reputation
+[06:05:57] Qwen timeout
+[06:05:57] No result returned
+[06:05:57] Done. 4/8 topics completed this cycle.
+[08:00:45] Batch #5: alliance-strategy
+[08:02:56] Batch #5: alliance-strategy
+[08:05:57] Qwen timeout
+[08:05:57] No result returned
+[08:05:57] Done. 5/8 topics completed this cycle.
+[10:01:01] Batch #6: competitive-analysis
+[10:02:57] Batch #6: competitive-analysis
+[10:05:57] Result (63700 chars): [{"type":"system","subtype":"init","uuid":"f2f77f55-697f-4ad1-99d9-0ba5a463201c","session_id":"f2f77f55-697f-4ad1-99d9-0ba5a463201c","cwd":"/root/.hermes/agenthansa","tools":["agent","skill","list_dir...
+[10:05:57] Done. 6/8 topics completed this cycle.
+[12:01:42] Batch #7: untapped-opportunities
+[12:04:42] Qwen timeout
+[12:04:42] No result returned
+[12:04:42] Done. 7/8 topics completed this cycle.
+[14:00:51] Batch #8: synthesis
+[16:00:39] Batch #8: synthesis
+[16:02:50] Batch #8: synthesis
+[18:00:11] Batch #8: synthesis
+[18:02:46] Batch #8: synthesis
+[18:05:46] Qwen timeout
+[18:05:46] No result returned
+[18:05:46] Done. 8/8 topics completed this cycle.
+[20:00:40] All topics researched! Starting new iteration cycle...
+[20:00:40] Batch #9: leaderboard
+[20:03:40] Qwen timeout
+[20:03:40] No result returned
+[20:03:40] Done. 8/8 topics completed this cycle.
+[22:00:34] All topics researched! Starting new iteration cycle...
+[22:00:34] Batch #10: leaderboard
+[00:00:28] Batch #11: leaderboard
+[00:03:02] Batch #11: leaderboard
+[00:06:02] Qwen timeout
+[00:06:02] No result returned
+[00:06:02] Done. 1/8 topics completed this cycle.
+[02:00:50] Batch #12: forum-quality
+[02:03:09] Batch #12: forum-quality
+[02:06:09] Qwen timeout
+[02:06:09] No result returned
+[02:06:09] Done. 2/8 topics completed this cycle.
+[04:00:11] Batch #13: quest-types
+[04:02:34] Batch #13: quest-types
+[04:05:34] Qwen timeout
+[04:05:34] No result returned
+[04:05:34] Done. 3/8 topics completed this cycle.
+[06:00:26] Batch #14: reputation
+[06:02:55] Batch #14: reputation
+[06:05:55] Qwen timeout
+[06:05:55] No result returned
+[06:05:55] Done. 4/8 topics completed this cycle.
+[08:01:17] Batch #15: alliance-strategy
+[08:03:36] Batch #15: alliance-strategy
+[08:06:36] Qwen timeout
+[08:06:36] No result returned
+[08:06:36] Done. 5/8 topics completed this cycle.
+[10:00:44] Batch #16: competitive-analysis
+[10:03:37] Batch #16: competitive-analysis
+[10:06:37] Qwen timeout
+[10:06:37] No result returned
+[10:06:37] Done. 6/8 topics completed this cycle.
+[12:00:21] Batch #17: untapped-opportunities
+[12:02:52] Batch #17: untapped-opportunities
+[12:05:52] Qwen timeout
+[12:05:52] No result returned
+[12:05:52] Done. 7/8 topics completed this cycle.
+[14:00:25] Batch #18: synthesis
+[14:03:16] Batch #18: synthesis
+[14:06:16] Qwen timeout
+[14:06:16] No result returned
+[14:06:16] Done. 8/8 topics completed this cycle.
+[16:00:54] All topics researched! Starting new iteration cycle...
+[16:00:54] Batch #19: leaderboard
+[16:03:05] Batch #20: leaderboard
+[16:06:05] Qwen timeout
+[16:06:05] No result returned
+[16:06:05] Done. 1/8 topics completed this cycle.
+[18:00:58] Batch #21: forum-quality
+[20:00:34] Batch #21: forum-quality
+[20:03:03] Batch #21: forum-quality
+[20:06:03] Qwen timeout
+[20:06:03] No result returned
+[20:06:03] Done. 2/8 topics completed this cycle.
+[22:01:11] Batch #22: quest-types
+[22:05:16] Batch #22: quest-types
+[22:08:16] Qwen timeout
+[22:08:16] No result returned
+[22:08:16] Done. 3/8 topics completed this cycle.
+[00:00:38] Batch #23: reputation
+[00:03:04] Batch #23: reputation
+[00:06:04] Qwen timeout
+[00:06:04] No result returned
+[00:06:04] Done. 4/8 topics completed this cycle.
+[02:01:06] Batch #24: alliance-strategy
+[02:03:22] Batch #24: alliance-strategy
+[02:06:22] Qwen timeout
+[02:06:22] No result returned
+[02:06:22] Done. 5/8 topics completed this cycle.
+[04:01:24] Batch #25: competitive-analysis
+[04:03:40] Batch #25: competitive-analysis
+[04:06:40] Qwen timeout
+[04:06:40] No result returned
+[04:06:40] Done. 6/8 topics completed this cycle.
+[06:00:34] Batch #26: untapped-opportunities
+[08:00:46] Batch #26: untapped-opportunities
+[08:03:01] Batch #26: untapped-opportunities
+[08:06:01] Qwen timeout
+[08:06:01] No result returned
+[08:06:01] Done. 7/8 topics completed this cycle.
+[10:00:35] Batch #27: synthesis
+[10:02:47] Batch #27: synthesis
+[10:05:48] Qwen timeout
+[10:05:48] No result returned
+[10:05:48] Done. 8/8 topics completed this cycle.
+[12:00:44] All topics researched! Starting new iteration cycle...
+[12:00:44] Batch #28: leaderboard
+[12:03:10] Batch #29: leaderboard
+[14:00:54] Batch #29: leaderboard
+[14:03:16] Batch #29: leaderboard
+[14:06:16] Qwen timeout
+[14:06:16] No result returned
+[14:06:16] Done. 1/8 topics completed this cycle.
+[18:00:26] Batch #30: forum-quality
+[18:02:55] Batch #30: forum-quality
+[18:05:55] Qwen timeout
+[18:05:55] No result returned
+[18:05:55] Done. 2/8 topics completed this cycle.
+[20:01:03] Batch #31: quest-types
+[20:04:00] Batch #31: quest-types
+[20:07:00] Qwen timeout
+[20:07:00] No result returned
+[20:07:00] Done. 3/8 topics completed this cycle.
+[22:00:50] Batch #32: reputation
+[22:00:56] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[22:00:56] Done. 4/8 topics completed this cycle.
+[00:01:16] Batch #33: alliance-strategy
+[00:04:16] Qwen timeout
+[00:04:16] No result returned
+[00:04:16] Done. 5/8 topics completed this cycle.
+[02:00:24] Batch #34: competitive-analysis
+[02:02:49] Batch #34: competitive-analysis
+[02:05:50] Qwen timeout
+[02:05:50] No result returned
+[02:05:50] Done. 6/8 topics completed this cycle.
+[04:01:17] Batch #35: untapped-opportunities
+[04:03:47] Batch #35: untapped-opportunities
+[04:06:47] Qwen timeout
+[04:06:47] No result returned
+[04:06:47] Done. 7/8 topics completed this cycle.
+[06:00:39] Batch #36: synthesis
+[06:00:45] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[06:00:45] Done. 8/8 topics completed this cycle.
+[08:00:55] All topics researched! Starting new iteration cycle...
+[08:00:55] Batch #37: leaderboard
+[08:01:00] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[08:01:00] Done. 8/8 topics completed this cycle.
+[10:00:52] All topics researched! Starting new iteration cycle...
+[10:00:52] Batch #38: leaderboard
+[10:00:58] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[10:00:58] Done. 8/8 topics completed this cycle.
+[12:00:43] All topics researched! Starting new iteration cycle...
+[12:00:43] Batch #39: leaderboard
+[12:00:49] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[12:00:49] Done. 8/8 topics completed this cycle.
+[14:00:39] All topics researched! Starting new iteration cycle...
+[14:00:39] Batch #40: leaderboard
+[14:00:44] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[14:00:44] Done. 8/8 topics completed this cycle.
+[16:01:12] All topics researched! Starting new iteration cycle...
+[16:01:12] Batch #41: leaderboard
+[16:01:18] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[16:01:18] Done. 8/8 topics completed this cycle.
+[18:00:48] All topics researched! Starting new iteration cycle...
+[18:00:48] Batch #42: leaderboard
+[18:00:55] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[18:00:55] Done. 8/8 topics completed this cycle.
+[20:00:40] All topics researched! Starting new iteration cycle...
+[20:00:40] Batch #43: leaderboard
+[20:00:45] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[20:00:45] Done. 8/8 topics completed this cycle.
+[22:00:29] All topics researched! Starting new iteration cycle...
+[22:00:29] Batch #44: leaderboard
+[22:00:35] Result (367 chars): Qwen OAuth quota exceeded: Your free daily quota has been reached.
+
+To continue using Qwen Code without waiting, upgrade to the Alibaba Cloud Coding Plan:
+  China:       https://help.aliyun.com/zh/mod...
+[22:00:35] Done. 8/8 topics completed this cycle.
+[00:00:36] All topics researched! Starting new iteration cycle...
+[00:00:36] Batch #45: leaderboard
+[00:03:03] Batch #46: leaderboard
+[00:06:03] Qwen timeout
+[00:06:03] No result returned
+[00:06:03] Done. 1/8 topics completed this cycle.
+[02:01:05] Batch #47: forum-quality
+[04:01:17] Batch #47: forum-quality
+[04:03:50] Batch #47: forum-quality
+[04:06:50] Qwen timeout
+[04:06:50] No result returned
+[04:06:50] Done. 2/8 topics completed this cycle.
+[06:00:50] Batch #48: quest-types
+[06:03:19] Batch #48: quest-types
+[06:06:19] Qwen timeout
+[06:06:19] No result returned
+[06:06:19] Done. 3/8 topics completed this cycle.
+[08:01:03] Batch #49: reputation
+[08:03:29] Batch #49: reputation
+[08:06:29] Qwen timeout
+[08:06:29] No result returned
+[08:06:29] Done. 4/8 topics completed this cycle.
+[10:00:51] Batch #50: alliance-strategy
+[10:00:53] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[10:00:53] Done. 5/8 topics completed this cycle.
+[12:00:29] Batch #51: competitive-analysis
+[12:00:31] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[12:00:31] Done. 6/8 topics completed this cycle.
+[14:00:24] Batch #52: untapped-opportunities
+[14:00:27] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[14:00:27] Done. 7/8 topics completed this cycle.
+[16:01:03] Batch #53: synthesis
+[16:01:06] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[16:01:06] Done. 8/8 topics completed this cycle.
+[18:01:03] All topics researched! Starting new iteration cycle...
+[18:01:03] Batch #54: leaderboard
+[18:01:06] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[18:01:06] Done. 8/8 topics completed this cycle.
+[22:01:09] All topics researched! Starting new iteration cycle...
+[22:01:09] Batch #55: leaderboard
+[22:01:11] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[22:01:11] Done. 8/8 topics completed this cycle.
+[00:01:12] All topics researched! Starting new iteration cycle...
+[00:01:12] Batch #56: leaderboard
+[00:01:14] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[00:01:14] Done. 8/8 topics completed this cycle.
+[02:00:11] All topics researched! Starting new iteration cycle...
+[02:00:11] Batch #57: leaderboard
+[02:00:14] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[02:00:14] Done. 8/8 topics completed this cycle.
+[04:01:31] All topics researched! Starting new iteration cycle...
+[04:01:31] Batch #58: leaderboard
+[04:01:34] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[04:01:34] Done. 8/8 topics completed this cycle.
+[06:00:13] All topics researched! Starting new iteration cycle...
+[06:00:13] Batch #59: leaderboard
+[06:00:16] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[06:00:16] Done. 8/8 topics completed this cycle.
+[08:01:09] All topics researched! Starting new iteration cycle...
+[08:01:09] Batch #60: leaderboard
+[08:01:11] Result (54 chars): [API Error: 401 invalid access token or token expired]...
+[08:01:11] Done. 8/8 topics completed this cycle.

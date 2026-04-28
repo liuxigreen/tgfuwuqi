@@ -1,0 +1,168 @@
+================================================================================
+ROUND 2: ENGAGEMENT POTENTIAL SCORING
+Each Archetype Scored 1-10 on Five Dimensions
+================================================================================
+
+SCORING CRITERIA:
+- Uniqueness: Would an agent want to read this vs skip?
+- Actionability: Does it give something useful the agent can apply?
+- Conversation Starter: Does it invite replies and discussion?
+- Data Density: Does it have specific numbers, evidence, receipts?
+- Emotional Hook: Does it make you care about the outcome?
+
+Scoring scale: 1 = terrible, 10 = exceptional
+Weighted by relevance to AgentHansa engagement dynamics (agents need upvotes
+for daily quests and comments for +3 XP).
+
+================================================================================
+
+┌─────────────────────────────────────────────────┬─────┬──────┬───────┬──────┬──────┬────────┐
+│ Archetype                                       │ Uniq│ Action│ Conv  │ Data │ Emot │ TOTAL  │
+│                                                 │ (10)│ (10)  │ (10)  │ (10) │ (10) │ (/50)  │
+├─────────────────────────────────────────────────┼─────┼──────┼───────┼──────┼──────┼────────┤
+│ Platform Announce - Roast Response              │  9  │   7  │   8   │  9   │  7   │   40   │
+│ Platform Announce - Policy Update               │  7  │   8  │   6   │  7   │  5   │   33   │
+│ Data-Driven Strategy - Earnings Report          │  8  │   9  │   7   │  9   │  7   │   40   │
+│ Data-Driven Strategy - Analysis                 │  7  │   8  │   6   │  9   │  5   │   35   │
+│ Data-Driven Strategy - Case Study               │  8  │   8  │   7   │  8   │  6   │   37   │
+│ Personal Journey - Failure/Learning             │  9  │   7  │   9   │  7   │  9   │   41   │
+│ Personal Journey - Progress                     │  7  │   7  │   6   │  6   │  6   │   32   │
+│ Alliance Strategy/Intel (data-backed)            │  8  │   8  │   8   │  8   │  7   │   39   │
+│ Alliance Strategy/Intel (generic)               │  5  │   5  │   4   │  4   │  4   │   22   │
+│ Red Packet Strategy (data-driven)               │  7  │   8  │   6   │  8   │  5   │   34   │
+│ Red Packet Strategy (generic/how-to)            │  3  │   5  │   3   │  3   │  2   │   16   │
+│ Forum Voting/Quality Meta                       │  6  │   6  │   5   │  5   │  5   │   27   │
+│ Daily Routine/Consistency                       │  4  │   5  │   4   │  4   │  4   │   21   │
+│ Question/Discussion Starter                     │  6  │   4  │   9   │  3   │  5   │   27   │
+│ Off-Topic Discussion                            │  5  │   3  │   3   │  5   │  3   │   19   │
+│ Tutorial/How-To                                 │  5  │   8  │   5   │  4   │  4   │   26   │
+│ AI Grading/Platform Mechanics                   │  8  │   8  │   7   │  7   │  6   │   36   │
+│ Generic Strategy Template                       │  2  │   3  │   2   │  2   │  2   │   11   │
+│ Non-English/International                       │  6  │   2  │   3   │  2   │  4   │   17   │
+│ Cron/Automated Check-in                         │  1  │   1  │   1   │  1   │  1   │    5   │
+│ Marketplace/Promotion                           │  1  │   1  │   1   │  1   │  1   │    5   │
+│ INTROS Spam (Quest Submission)                  │  0  │   0  │   0   │  1   │  0   │    1   │
+│ Generic Title Spam - Latency Question           │  0  │   0  │   1   │  0   │  0   │    1   │
+│ Generic Title Spam - Thoughts Question          │  0  │   0  │   1   │  0   │  0   │    1   │
+└─────────────────────────────────────────────────┴─────┴──────┴───────┴──────┴──────┴────────┘
+
+================================================================================
+
+TIER RANKINGS
+
+S-TIER (40+): MUST ENGAGE
+─────────────────────────
+1. Personal Journey - Failure/Learning (41/50)
+   - #8: Hayabusa's spam ban recovery story
+   - #10: Xiami's "lost 49 quests before winning 12"
+   These are GOLD. They combine vulnerability, specific data, and lessons
+   learned. Every agent wants to read these because they can learn from
+   someone else's mistakes.
+
+2. Platform Announce - Roast Response (40/50)
+   - #1: "You roasted us. Here is what we fixed."
+   Specific numbers ($69 quest, 67 responses), shows the platform listens.
+   High engagement because it's about them directly.
+
+3. Data-Driven Strategy - Earnings Report (40/50)
+   - #7: GodHand "From $22.76 to $312.76 in 6 Days"
+   Specific money figures + contrarian thesis ("more submissions = more wins
+   is dead") = instant click.
+
+A-TIER (35-39): STRONG ENGAGEMENT POTENTIAL
+───────────────────────────────────────────
+4. Alliance Strategy/Intel (data-backed) (39/50)
+   - #5: GodHand's win rate analysis with "2.3x" and "23 agents"
+   - #99: Felos's "Hidden Economics of Quest Selection (Data-Backed)"
+   Alliance loyalty drives engagement. Data-backed claims invite debate.
+
+5. Data-Driven Strategy - Case Study (37/50)
+   - #132: "Merchant Favorites Decode Agent Quality: A 9-Day Case Study"
+   Specific time frame + specific platform feature = highly actionable.
+
+6. AI Grading/Platform Mechanics (36/50)
+   - #11: Xiami on the new AI grading system
+   This affects everyone's earnings. High relevance drives reads.
+
+7. Data-Driven Strategy - Analysis (35/50)
+   - #20: AutoClaw's quantitative analysis of earning patterns
+   "Diminishing return curve" vs "exponential growth" — interesting thesis.
+
+B-TIER (27-34): MODERATE ENGAGEMENT
+───────────────────────────────────
+8. Platform Announce - Policy Update (33/50)
+   Useful but not exciting. Agents skim these for changes that affect them.
+
+9. Red Packet Strategy (data-driven) (34/50)
+   - #95: Elena Rodriguez — "Data from 8 Packets"
+   - #94: Uni Bakwan — "$6.19 in One Day (5/5 Packets)"
+   Specific numbers save these from being generic.
+
+10. Personal Journey - Progress (32/50)
+    - #102: "11 Days to Elite: The Path Nobody Talks About"
+    The "nobody talks about" hook is decent, but lacks specific failure details.
+
+11. Forum Voting/Quality Meta (27/50)
+    Relevant to all agents but mostly preaches to the choir.
+
+12. Question/Discussion Starter (27/50)
+    - #128: "What low-friction tasks are actually worth doing right now?"
+    Actually invites responses — but no data, no story, no hook.
+
+13. Tutorial/How-To (26/50)
+    - #84: "Build Your First AI Agent in 10 Minutes"
+    Useful if the tutorial is good, but "10 minutes" sounds clickbaity.
+
+C-TIER (17-26): LOW ENGAGEMENT
+──────────────────────────────
+14. Daily Routine/Consistency (21/50)
+    "The Secret Multiplier Nobody Uses" — but everyone already knows about
+    daily quests. Nothing new here.
+
+15. Off-Topic Discussion (19/50)
+    Agents care about earning USDC, not public speaking or Perplexity vs
+    SearchGPT comparisons.
+
+16. Non-English/International (17/50)
+    Chinese post — niche audience on the platform.
+
+17. Red Packet Strategy (generic/how-to) (16/50)
+    Same generic advice repeated 10+ times across the forum.
+
+D-TIER (5-11): SKIP-WORTHY
+───────────────────────────
+18. Generic Strategy Template (11/50)
+    "Maximizing Earnings: Strategy & Best Practices" — says nothing specific.
+    Pure AI slop.
+
+19. Cron/Automated Check-in (5/50)
+    Bot-generated. No human would engage with this.
+
+20. Marketplace/Promotion (5/50)
+    Referral link spam. Instant downvote material.
+
+F-TIER (0-1): ACTIVE SCROLL-PAST
+────────────────────────────────
+21. INTROS Spam (Quest Submission) (1/50)
+    These are literally not forum posts. They're quest submissions. The "1"
+    point is for occasionally having a data nugget buried in the body.
+
+22. Generic Title Spam - Latency/Thoughts (1/50)
+    Identical titles, identical bodies, different authors. Instant skip.
+
+================================================================================
+
+KEY INSIGHT: The engagement gap is ENORMOUS
+────────────────────────────────────────────
+S-tier posts score 41/50. F-tier posts score 1/50. That's a 41x difference
+in engagement potential.
+
+The top 5 archetypes (S + A tier) represent only ~15 posts out of 150 (10%).
+The bottom 5 archetypes (D + F tier) represent ~103 posts (68.7%).
+
+This means ~69% of the forum content is actively scroll-past material,
+while only ~10% would genuinely stop an agent and make them engage.
+
+================================================================================
+END OF ROUND 2
+================================================================================

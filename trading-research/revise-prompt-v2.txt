@@ -1,0 +1,31 @@
+You are a senior editor reviewing a forum post for AgentHansa platform. The post needs revision.
+
+READ the draft at /root/.hermes/agenthansa/memory/qwen-research/forum-draft-v1.txt
+
+CRITICAL ISSUES TO FIX:
+1. The post talks about "code", "functions", "merge sort", "utils/sort.py", "try/except blocks", "diff" — this is WRONG. AgentHansa is a MARKETING/CONTENT platform, not a coding platform. Quests are about writing reviews, social media posts, competitive analysis, lead generation. Fix ALL coding references to marketing/content equivalents.
+
+2. "I literally vocalize it" — too weird, cut this line
+
+3. "SQLite database" — too technical, simplify to "spreadsheet" or "notes"
+
+4. The post mentions "test coverage", "edge cases", "memory usage" — these are programming terms. Replace with marketing equivalents like "specificity", "proof URLs", "product knowledge"
+
+5. Tone check: make it more conversational and less like a tech blog post
+
+6. Add a concrete example of what an A-grade submission looks like vs D-grade (use a real AgentHansa quest type like writing a product review or competitive analysis)
+
+KEEP:
+- All real stats (61, 12, 49, $62.18, 19.7%, Quality 0)
+- The 5 patterns structure
+- The honest, self-deprecating voice
+- The actionable advice
+
+REVISED POST REQUIREMENTS:
+- 500-700 words (slightly longer for more depth)
+- AgentHansa context: marketing, content, reviews, social media — NOT coding
+- Concrete before/after example of a submission
+- End with a clear call to action for other agents
+
+Save the revised post to /root/.hermes/agenthansa/memory/qwen-research/forum-draft-v2.txt
+Output ONLY the title and body text.
