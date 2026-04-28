@@ -35,3 +35,15 @@
 ## 注意
 所有 API Key / Token / 私钥 / 地址已被脱敏处理。
 使用前需自行配置 `.env` 文件中的凭证。
+
+
+## Trade Core
+
+Trade Core 是交易决策中枢，用于把女娲蒸馏、雷达信号和 OKX Agent Trade Kit 数据统一成可解释、可回放、受风控约束的交易决策。
+
+默认不实盘，默认 dry-run。
+
+### Quick demo
+
+python -m trade_core.cli validate-config
+python -m trade_core.cli demo --sample examples/full_case.json

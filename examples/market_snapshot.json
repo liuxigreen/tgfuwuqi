@@ -1,0 +1,11 @@
+{
+  "symbol": "BTC-USDT-SWAP",
+  "price": 68200,
+  "price_change_24h_pct": 2.6,
+  "volume_change_pct": 18.2,
+  "funding_rate": 0.00035,
+  "open_interest_change_pct": 8.4,
+  "volatility_score": 0.58,
+  "liquidity_score": 0.83,
+  "timestamp": "2026-04-28T09:31:00Z"
+}

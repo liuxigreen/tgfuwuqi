@@ -1,0 +1,3 @@
+default_mode: propose
+default_dry_run: true
+allow_live_execution: false
