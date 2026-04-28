@@ -27,6 +27,7 @@ def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
         import json
         outcomes = [json.loads(x) for x in op.read_text(encoding="utf-8").splitlines() if x.strip()]
     cal = calibration_review(outcomes)
+    evaluable_outcomes = [o for o in outcomes if o.get("correctness_label") in {"correct", "wrong", "partially_correct", "avoided_bad_trade", "missed_good_trade"}]
     return {
         "ok": True,
         "date": date,
@@ -40,14 +41,14 @@ def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
         "small_probe_count": actions.get('small_probe', 0),
         "open_count": actions.get('open_long', 0) + actions.get('open_short', 0),
         "exit_count": actions.get('close', 0),
-        "win_count": None if not outcomes else len([o for o in outcomes if o.get("correctness_label")=="correct"]),
-        "loss_count": None if not outcomes else len([o for o in outcomes if o.get("correctness_label")=="wrong"]),
-        "win_rate": None if not outcomes else (len([o for o in outcomes if o.get("correctness_label")=="correct"]) / max(1,len(outcomes))),
-        "profit_factor": None if not outcomes else "data_unavailable",
+        "win_count": None if not evaluable_outcomes else len([o for o in evaluable_outcomes if o.get("correctness_label")=="correct"]),
+        "loss_count": None if not evaluable_outcomes else len([o for o in evaluable_outcomes if o.get("correctness_label")=="wrong"]),
+        "win_rate": None if not evaluable_outcomes else (len([o for o in evaluable_outcomes if o.get("correctness_label")=="correct"]) / max(1,len(evaluable_outcomes))),
+        "profit_factor": None if not evaluable_outcomes else "data_unavailable",
         "total_pnl_usdt": None,
         "total_pnl_pct": None,
-        "max_drawdown_pct": None if not outcomes else "data_unavailable",
-        "avg_R": None if not outcomes else "data_unavailable",
+        "max_drawdown_pct": None if not evaluable_outcomes else "data_unavailable",
+        "avg_R": None if not evaluable_outcomes else "data_unavailable",
         "avg_latency_ms": sum(lat)/len(lat) if lat else 0,
         "p95_latency_ms": p95,
         "timeout_count": len([d for d in decisions if 'latency_budget_exceeded' in d.get('payload', {}).get('reason_codes', [])]),
@@ -64,7 +65,7 @@ def daily_review(date: str, journal_dir='data/trade_core_journal') -> Dict:
         "false_positive_estimate": 0.0,
         "missed_opportunity_estimate": 0.0,
         "recommendations": ["Prefer lower-latency adapters and keep live disabled."],
-        "insufficient_sample_size": len(outcomes) < 10,
+        "insufficient_sample_size": len(evaluable_outcomes) < 10,
         "outcome_count": len(outcomes),
         "correct_count": len([o for o in outcomes if o.get("correctness_label")=="correct"]),
         "wrong_count": len([o for o in outcomes if o.get("correctness_label")=="wrong"]),
