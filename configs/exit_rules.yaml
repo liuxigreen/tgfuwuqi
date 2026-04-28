@@ -1,7 +1,6 @@
-default:
-  first_tp_pct: 0.03
-  final_tp_pct: 0.08
-  stop_loss_pct: 0.02
-  max_hold_minutes: 720
-  tighten_stop_after_rr: 1.2
-  partial_take_profit_pct: 0.35
+first_tp_pct: 0.03
+final_tp_pct: 0.08
+stop_loss_pct: 0.02
+max_hold_minutes: 720
+tighten_stop_after_rr: 1.2
+partial_take_profit_pct: 0.35

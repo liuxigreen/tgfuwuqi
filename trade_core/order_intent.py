@@ -10,7 +10,7 @@ def build_order_intent(decision: TradeDecision, config: Optional[dict] = None) -
     cfg = config or load_config()
     risk = cfg["risk_limits"]
 
-    executable = decision.action in {TradeAction.SMALL_PROBE, TradeAction.OPEN_LONG, TradeAction.OPEN_SHORT}
+    executable = decision.action in {TradeAction.SMALL_PROBE, TradeAction.OPEN_LONG, TradeAction.OPEN_SHORT} and decision.direction in {Direction.LONG, Direction.SHORT}
     if not executable:
         return OrderIntent(
             symbol=decision.symbol,

@@ -29,13 +29,19 @@ def _to_mode(mode: str | OperatingMode) -> OperatingMode:
 
 
 def _score_to_action(score: float, direction: Direction) -> TradeAction:
+    if direction in {Direction.UNKNOWN, Direction.NEUTRAL}:
+        return TradeAction.OBSERVE
     if score < 50:
         return TradeAction.OBSERVE
     if score < 65:
         return TradeAction.PROPOSE
     if score < 80:
         return TradeAction.SMALL_PROBE
-    return TradeAction.OPEN_LONG if direction == Direction.LONG else TradeAction.OPEN_SHORT
+    if direction == Direction.LONG:
+        return TradeAction.OPEN_LONG
+    if direction == Direction.SHORT:
+        return TradeAction.OPEN_SHORT
+    return TradeAction.OBSERVE
 
 
 def build_trade_decision(
@@ -68,15 +74,9 @@ def build_trade_decision(
             continue
         stale, err = is_stale(ts, max_age)
         if err:
-            if run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED}:
-                blocked_reasons.append(f"{name}_timestamp_invalid")
-            else:
-                warnings.append(f"{name}_timestamp_invalid")
+            (blocked_reasons if run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED} else warnings).append(f"{name}_timestamp_invalid")
         elif stale:
-            if run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED}:
-                blocked_reasons.append(f"{name}_snapshot_stale")
-            else:
-                warnings.append(f"{name}_snapshot_stale")
+            (blocked_reasons if run_mode in {OperatingMode.DEMO_AUTO, OperatingMode.LIVE_GUARDED} else warnings).append(f"{name}_snapshot_stale")
 
     if account_snapshot is not None:
         stale, err = is_stale(account_snapshot.timestamp, max_age)
@@ -87,6 +87,10 @@ def build_trade_decision(
 
     if nuwa_eval.block_trade:
         blocked_reasons.append("nuwa_block_trade")
+
+    min_conf = float(cfg.get("nuwa_runtime", {}).get("min_confidence_for_demo_auto", 0.65))
+    if run_mode == OperatingMode.DEMO_AUTO and nuwa_eval.confidence < min_conf:
+        blocked_reasons.append("nuwa_confidence_too_low_for_demo_auto")
 
     breakdown = compute_score(
         radar_signal,
@@ -133,6 +137,19 @@ def build_trade_decision(
     if blocked_reasons:
         action = TradeAction.BLOCKED
 
+    score_breakdown = {
+        "market_score": breakdown.market_score,
+        "oi_score": breakdown.oi_score,
+        "funding_score": breakdown.funding_score,
+        "sentiment_score": breakdown.sentiment_score,
+        "smart_money_score": breakdown.smart_money_score,
+        "nuwa_score": breakdown.nuwa_score,
+        "risk_penalty": breakdown.risk_penalty,
+        "total_score": breakdown.total_score,
+        "missing_inputs": breakdown.missing_inputs,
+        "warnings": breakdown.warnings,
+    }
+
     preferred_execution = "demo_dry_run" if run_mode == OperatingMode.DEMO_AUTO else "dry_run"
     return TradeDecision(
         action=action,
@@ -146,6 +163,7 @@ def build_trade_decision(
         reason_codes=sorted(set(reason_codes)),
         blocked_reasons=sorted(set(blocked_reasons)),
         warnings=sorted(set(warnings)),
+        score_breakdown=score_breakdown,
         recommended_size_pct=risk.risk_adjusted_size_pct,
         recommended_leverage=min(leverage, float(cfg["risk_limits"].get("max_leverage", 3))),
         preferred_execution=preferred_execution,

@@ -41,6 +41,21 @@ DEFAULTS: Dict[str, Any] = {
         "command_timeout_seconds": 20,
         "max_slippage_pct": 0.003,
         "required_profile_for_execution": "demo",
+        "read_only_modules": ["market", "account", "news", "smartmoney"],
+        "execution_modules": ["spot", "swap"],
+    },
+    "exit_rules": {
+        "first_tp_pct": 0.03,
+        "final_tp_pct": 0.08,
+        "stop_loss_pct": 0.02,
+        "max_hold_minutes": 720,
+        "tighten_stop_after_rr": 1.2,
+        "partial_take_profit_pct": 0.35,
+    },
+    "nuwa_runtime": {
+        "default_nuwa_version": "nuwa_default_v1",
+        "min_confidence_for_demo_auto": 0.65,
+        "versions": {},
     },
 }
 
@@ -76,13 +91,39 @@ def load_simple_yaml(path: Path) -> Dict[str, Any]:
     return result
 
 
+def load_nuwa_runtime(path: Path) -> Dict[str, Any]:
+    cfg = {**DEFAULTS["nuwa_runtime"]}
+    if not path.exists():
+        return cfg
+    lines = [l.rstrip("\n") for l in path.read_text(encoding="utf-8").splitlines() if l.strip() and not l.strip().startswith("#")]
+    current_version = None
+    versions: Dict[str, Dict[str, Any]] = {}
+    for line in lines:
+        if line.startswith("default_nuwa_version:"):
+            cfg["default_nuwa_version"] = _parse_scalar(line.split(":", 1)[1])
+        elif line.startswith("min_confidence_for_demo_auto:"):
+            cfg["min_confidence_for_demo_auto"] = float(_parse_scalar(line.split(":", 1)[1]))
+        elif line.strip() == "versions:":
+            continue
+        elif line.startswith("  ") and line.endswith(":") and not line.startswith("    "):
+            current_version = line.strip()[:-1]
+            versions[current_version] = {}
+        elif line.startswith("    ") and current_version and ":" in line:
+            k, v = line.strip().split(":", 1)
+            versions[current_version][k] = _parse_scalar(v)
+    cfg["versions"] = versions
+    return cfg
+
+
 def load_config(config_dir: Path | None = None) -> Dict[str, Any]:
     cfg_dir = config_dir or DEFAULT_CONFIG_DIR
     risk = {**DEFAULTS["risk_limits"], **load_simple_yaml(cfg_dir / "risk_limits.yaml")}
     weights = {**DEFAULTS["scoring_weights"], **load_simple_yaml(cfg_dir / "scoring_weights.yaml")}
     modes = {**DEFAULTS["operating_modes"], **load_simple_yaml(cfg_dir / "operating_modes.yaml")}
     okx = {**DEFAULTS["okx_gateway"], **load_simple_yaml(cfg_dir / "okx_gateway.yaml")}
-    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes, "okx_gateway": okx}
+    exit_rules = {**DEFAULTS["exit_rules"], **load_simple_yaml(cfg_dir / "exit_rules.yaml")}
+    nuwa_runtime = load_nuwa_runtime(cfg_dir / "nuwa_runtime.yaml")
+    return {"risk_limits": risk, "scoring_weights": weights, "operating_modes": modes, "okx_gateway": okx, "exit_rules": exit_rules, "nuwa_runtime": nuwa_runtime}
 
 
 def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:

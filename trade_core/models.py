@@ -117,6 +117,7 @@ class TradeDecision:
     reason_codes: List[str]
     blocked_reasons: List[str]
     warnings: List[str]
+    score_breakdown: Dict[str, Any]
     recommended_size_pct: float
     recommended_leverage: float
     preferred_execution: str
@@ -185,6 +186,15 @@ class PositionExitEvaluation:
     time_in_position_minutes: int
     recommended_action: str
     reason_codes: List[str]
+
+
+@dataclass
+class ReportResult:
+    title: str
+    markdown: str
+    json: Dict[str, Any]
+    severity: str
+    generated_at: str
 
 
 def model_to_dict(model: Any) -> Dict[str, Any]:

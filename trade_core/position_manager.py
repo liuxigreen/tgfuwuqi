@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Optional
 
+from .config import load_config
 from .models import Direction, ExitDecision, MarketSnapshot, NuwaEval, PositionExitEvaluation, PositionState, SentimentSnapshot, SmartMoneySnapshot
 
 
-EXIT_DEFAULT = {
+BASE = {
     "first_tp_pct": 0.03,
     "final_tp_pct": 0.08,
     "stop_loss_pct": 0.02,
@@ -23,34 +24,26 @@ def evaluate_position_exit(
     market_snapshot: Optional[MarketSnapshot] = None,
     rules: Optional[dict] = None,
 ) -> PositionExitEvaluation:
-    r = {**EXIT_DEFAULT, **(rules or {})}
+    r = {**BASE, **(rules or {})}
     reasons = []
-    pnl = position_state.unrealized_pnl_pct / 100 if abs(position_state.unrealized_pnl_pct) > 1 else position_state.unrealized_pnl_pct
+    pnl = position_state.unrealized_pnl_pct
     rr_progress = max(0.0, pnl / max(1e-6, r["first_tp_pct"]))
     recommended = "HOLD"
 
     if pnl <= -abs(r["stop_loss_pct"]):
-        recommended = "EXIT_FULL"
-        reasons.append("hard_stop")
+        recommended = "EXIT_FULL"; reasons.append("hard_stop")
     elif pnl >= r["final_tp_pct"]:
-        recommended = "TIGHTEN_STOP"
-        reasons.append("final_tp")
+        recommended = "TIGHTEN_STOP"; reasons.append("final_tp")
     elif pnl >= r["first_tp_pct"]:
-        recommended = "TAKE_PARTIAL_PROFIT"
-        reasons.append("first_tp")
+        recommended = "TAKE_PARTIAL_PROFIT"; reasons.append("first_tp")
 
     thesis_status = "valid"
     continuation = nuwa_eval.continuation_probability if nuwa_eval else 0.5
-    if nuwa_eval and getattr(nuwa_eval, "notes", ""):
-        low = nuwa_eval.notes.lower()
-        if "invalidated" in low or "failed" in low:
-            thesis_status = "invalidated"
-            recommended = "EXIT_FULL"
-            reasons.append("thesis_invalidated")
-        elif "weakening" in low:
-            thesis_status = "weakening"
-            recommended = "REDUCE" if recommended == "HOLD" else recommended
-            reasons.append("thesis_weakening")
+    notes = (nuwa_eval.notes.lower() if nuwa_eval and nuwa_eval.notes else "")
+    if "invalidated" in notes or "failed" in notes:
+        thesis_status = "invalidated"; recommended = "EXIT_FULL"; reasons.append("thesis_invalidated")
+    elif "weakening" in notes:
+        thesis_status = "weakening"; recommended = "REDUCE" if recommended == "HOLD" else recommended; reasons.append("thesis_weakening")
 
     smart_align = "unknown"
     if smartmoney_snapshot:
@@ -58,9 +51,8 @@ def evaluate_position_exit(
             position_state.side == Direction.SHORT and smartmoney_snapshot.weighted_direction == Direction.LONG
         )
         smart_align = "against" if opp else "aligned"
-        if opp:
-            recommended = "REDUCE" if recommended == "HOLD" else recommended
-            reasons.append("smartmoney_reversal")
+        if opp and recommended == "HOLD":
+            recommended = "REDUCE"; reasons.append("smartmoney_reversal")
 
     senti_align = "unknown"
     if sentiment_snapshot:
@@ -69,20 +61,14 @@ def evaluate_position_exit(
         )
         senti_align = "against" if bad else "aligned"
         if bad and recommended == "HOLD":
-            recommended = "REVIEW_REQUIRED"
-            reasons.append("sentiment_reversal")
+            recommended = "REVIEW_REQUIRED"; reasons.append("sentiment_reversal")
 
     oi_confirmation = "unknown"
     if market_snapshot:
         oi_confirmation = "confirmed" if market_snapshot.open_interest_change_pct > 0 else "weak"
 
     if position_state.age_minutes > r["max_hold_minutes"] and rr_progress < 0.5 and recommended == "HOLD":
-        recommended = "REDUCE"
-        reasons.append("time_stop")
-
-    if continuation < 0.35 and recommended == "HOLD":
-        recommended = "BLOCK_ADD"
-        reasons.append("no_add_rule")
+        recommended = "REDUCE"; reasons.append("time_stop")
 
     return PositionExitEvaluation(
         position_id=position_state.position_id,
@@ -103,15 +89,9 @@ def evaluate_position_exit(
     )
 
 
-def evaluate_exit(
-    position_state: PositionState,
-    market_snapshot: Optional[MarketSnapshot] = None,
-    sentiment_snapshot: Optional[SentimentSnapshot] = None,
-    smartmoney_snapshot: Optional[SmartMoneySnapshot] = None,
-    nuwa_eval: Optional[NuwaEval] = None,
-    config: Optional[dict] = None,
-) -> ExitDecision:
-    result = evaluate_position_exit(position_state, sentiment_snapshot, smartmoney_snapshot, nuwa_eval, market_snapshot)
+def evaluate_exit(position_state: PositionState, market_snapshot: Optional[MarketSnapshot] = None, sentiment_snapshot: Optional[SentimentSnapshot] = None, smartmoney_snapshot: Optional[SmartMoneySnapshot] = None, nuwa_eval: Optional[NuwaEval] = None, config: Optional[dict] = None) -> ExitDecision:
+    rules = (config or load_config()).get("exit_rules", {})
+    result = evaluate_position_exit(position_state, sentiment_snapshot, smartmoney_snapshot, nuwa_eval, market_snapshot, rules=rules)
     mapper = {
         "HOLD": ("HOLD", "low", 0.0, False),
         "REDUCE": ("REDUCE", "medium", 50.0, True),

@@ -1,0 +1,11 @@
+default_nuwa_version: nuwa_default_v1
+min_confidence_for_demo_auto: 0.65
+versions:
+  nuwa_default_v1:
+    skill_path: distillation-data/Traders/xiaomustock/SKILL.md
+    enabled: true
+    mode: mock_structured
+  connectfarm1_v1:
+    skill_path: distillation-data/Twitter Archive/connectfarm1/SKILL.md
+    enabled: false
+    mode: mock_structured

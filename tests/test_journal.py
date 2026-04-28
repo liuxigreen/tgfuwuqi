@@ -9,7 +9,7 @@ def test_journal_writes_jsonl(tmp_path):
 def test_no_secrets_in_journal(tmp_path):
     p = write_journal_event("decision", "pipe1", "BTC-USDT", {"api_key": "abc", "secret": "x"}, base_dir=str(tmp_path))
     text = open(p, "r", encoding="utf-8").read()
-    assert "\"api_key\"" not in text
+    assert "abc" not in text and "\"[REDACTED]\"" in text
 
 
 def test_review_summary(tmp_path):

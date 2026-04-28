@@ -1,0 +1,4 @@
+{
+  "radar_signal": {"symbol": "BTC-USDT-SWAP", "market_type": "swap", "direction": "long", "score": 80, "source": "radar", "timestamp": "2026-04-28T00:00:00Z", "features": {}},
+  "nuwa_eval": {"version": "nuwa-2026.04", "market_regime": "trend", "signal_archetype": "x", "signal_quality": 0.7, "continuation_probability": 0.7, "manipulation_risk": 0.2, "preferred_action": "propose", "block_trade": false, "confidence": 0.4, "notes": ""}
+}

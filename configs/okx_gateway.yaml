@@ -6,3 +6,5 @@ allow_trade_execution: false
 command_timeout_seconds: 20
 max_slippage_pct: 0.003
 required_profile_for_execution: demo
+read_only_modules: [market, account, news, smartmoney]
+execution_modules: [spot, swap]

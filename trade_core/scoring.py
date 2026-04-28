@@ -17,6 +17,7 @@ class ScoreBreakdown:
     nuwa_score: float
     risk_penalty: float
     warnings: List[str] = field(default_factory=list)
+    missing_inputs: List[str] = field(default_factory=list)
     reason_codes: List[str] = field(default_factory=list)
 
 
@@ -45,6 +46,7 @@ def compute_score(
     w = {**DEFAULT_WEIGHTS, **(weights or {})}
     reason_codes: List[str] = []
     warnings: List[str] = []
+    missing_inputs: List[str] = []
 
     market_score = 55.0
     oi_score = min(100.0, max(0.0, radar_signal.score))
@@ -67,6 +69,7 @@ def compute_score(
             reason_codes.append("funding_extreme_crowding")
     else:
         warnings.append("market_snapshot_missing")
+        missing_inputs.append("market_snapshot")
 
     sentiment_score = 55.0
     if sentiment_snapshot:
@@ -85,6 +88,7 @@ def compute_score(
         risk_penalty += sentiment_snapshot.news_risk * 5
     else:
         warnings.append("sentiment_snapshot_missing")
+        missing_inputs.append("sentiment_snapshot")
 
     smart_money_score = 55.0
     if smartmoney_snapshot:
@@ -101,6 +105,7 @@ def compute_score(
             reason_codes.append("premium_too_high_wait_pullback")
     else:
         warnings.append("smartmoney_snapshot_missing")
+        missing_inputs.append("smartmoney_snapshot")
 
     nuwa_score = min(100.0, max(0.0, 50 + nuwa_eval.continuation_probability * 35 - nuwa_eval.manipulation_risk * 30))
 
@@ -125,5 +130,6 @@ def compute_score(
         nuwa_score=round(nuwa_score, 2),
         risk_penalty=round(risk_penalty, 2),
         warnings=warnings,
+        missing_inputs=missing_inputs,
         reason_codes=sorted(set(reason_codes)),
     )

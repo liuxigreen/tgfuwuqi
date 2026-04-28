@@ -21,11 +21,11 @@ def test_live_execution_blocked():
     gw = OkxGateway(backend="cli", profile="live", dry_run=False, allow_live=False, allow_trade_execution=True)
     intent = OrderIntent("BTC-USDT", "buy", "spot", "percent_equity", 1.0, "limit", 0.02, 0.05, True, True, False, ["x"], {}, "v1", "d1")
     out = gw.execute_order_intent(intent, OperatingMode.DEMO_AUTO)
-    assert out["status"] == "blocked"
+    assert out["blocked"] is True
 
 
 def test_demo_execution_default_dry_run():
     gw = OkxGateway(backend="cli", profile="demo", dry_run=True)
     intent = OrderIntent("BTC-USDT", "buy", "spot", "percent_equity", 1.0, "limit", 0.02, 0.05, True, True, True, ["x"], {}, "v1", "d1")
     out = gw.execute_order_intent(intent, OperatingMode.DEMO_AUTO)
-    assert out["status"] == "dry_run"
+    assert out["dry_run"] is True
