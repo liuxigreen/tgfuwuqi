@@ -1,0 +1,12 @@
+{
+  "version": "nuwa-2026.04",
+  "market_regime": "trend",
+  "signal_archetype": "continuation",
+  "signal_quality": 0.72,
+  "continuation_probability": 0.75,
+  "manipulation_risk": 0.32,
+  "preferred_action": "wait_pullback",
+  "block_trade": false,
+  "confidence": 0.79,
+  "notes": "偏多，但追高性价比一般"
+}

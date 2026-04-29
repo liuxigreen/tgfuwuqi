@@ -1,0 +1,2 @@
+{"event_type":"decision","symbol":"BTC-USDT","payload":{"action":"open_long","risk_status":"pass"}}
+{"event_type":"execution_result","symbol":"BTC-USDT","payload":{"executed":false,"dry_run":true}}

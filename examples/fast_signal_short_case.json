@@ -1,0 +1,4 @@
+{
+  "radar_signal": {"symbol": "ETH-USDT-SWAP", "market_type": "swap", "direction": "short", "score": 76, "source": "radar", "timestamp": "2026-04-28T15:30:00Z", "features": {}},
+  "nuwa_eval": {"version": "nuwa-2026.04", "market_regime": "trend", "signal_archetype": "reversal", "signal_quality": 0.7, "continuation_probability": 0.68, "manipulation_risk": 0.2, "preferred_action": "small_probe", "block_trade": false, "confidence": 0.75, "notes": ""}
+}

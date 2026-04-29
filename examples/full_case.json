@@ -1,0 +1,68 @@
+{
+  "radar_signal": {
+    "symbol": "BTC-USDT-SWAP",
+    "market_type": "swap",
+    "direction": "long",
+    "score": 78,
+    "source": "radar.v1",
+    "timestamp": "2026-04-28T15:30:00Z",
+    "features": {
+      "oi_up": true,
+      "price_breakout": true
+    }
+  },
+  "nuwa_eval": {
+    "version": "nuwa-2026.04",
+    "market_regime": "trend",
+    "signal_archetype": "continuation",
+    "signal_quality": 0.72,
+    "continuation_probability": 0.75,
+    "manipulation_risk": 0.32,
+    "preferred_action": "wait_pullback",
+    "block_trade": false,
+    "confidence": 0.79,
+    "notes": "偏多但不追高"
+  },
+  "market_snapshot": {
+    "symbol": "BTC-USDT-SWAP",
+    "price": 68200,
+    "price_change_24h_pct": 2.6,
+    "volume_change_pct": 18.2,
+    "funding_rate": 0.00035,
+    "open_interest_change_pct": 8.4,
+    "volatility_score": 0.58,
+    "liquidity_score": 0.83,
+    "timestamp": "2026-04-28T15:30:00Z"
+  },
+  "sentiment_snapshot": {
+    "symbol": "BTC-USDT-SWAP",
+    "sentiment_score": 0.69,
+    "sentiment_trend": "up",
+    "abnormal_sentiment_shift": false,
+    "news_risk": 0.22,
+    "timestamp": "2026-04-28T15:30:00Z"
+  },
+  "smartmoney_snapshot": {
+    "symbol": "BTC-USDT-SWAP",
+    "consensus_direction": "long",
+    "weighted_direction": "long",
+    "avg_win_rate": 0.63,
+    "long_short_ratio": 1.22,
+    "smart_money_trend": "accumulate",
+    "entry_vwap": 67350,
+    "current_price": 68200,
+    "premium_discount_pct": 1.26,
+    "timestamp": "2026-04-28T15:30:00Z"
+  },
+  "account_snapshot": {
+    "equity_usdt": 12000,
+    "available_usdt": 9000,
+    "daily_pnl_pct": -0.4,
+    "open_positions_count": 1,
+    "same_symbol_existing_position": false,
+    "total_exposure_pct": 26,
+    "max_position_exposure_pct": 14,
+    "timestamp": "2026-04-28T15:30:00Z"
+  },
+  "mode": "propose"
+}

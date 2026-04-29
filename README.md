@@ -35,3 +35,23 @@
 ## 注意
 所有 API Key / Token / 私钥 / 地址已被脱敏处理。
 使用前需自行配置 `.env` 文件中的凭证。
+
+
+## Trade Core
+
+Trade Core 是交易决策中枢，用于把女娲蒸馏、雷达信号和 OKX Agent Trade Kit 数据统一成可解释、可回放、受风控约束的交易决策。
+
+默认不实盘，默认 dry-run。
+
+### Quick demo
+
+python -m trade_core.cli validate-config
+python -m trade_core.cli demo --sample examples/full_case.json
+
+### Stabilization Status (Salvage Patch)
+
+当前分支保留了 Trade Core scaffold，并完成稳定性收口（不新增功能）：
+- Python 模块可编译（`python -m compileall trade_core`）。
+- 全量测试可通过（`python -m pytest`）。
+- 最小 CLI 验收命令可运行（含 `validate-config` / `fast-signal` / `limits-status` / `daily-review` / `self-evolve` / `okx-check`）。
+- 当前版本仍为 **Safe Demo Scaffold**，`allow_live=false` 且 `allow_trade_execution=false`，禁止 live 自动交易。

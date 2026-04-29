@@ -1,0 +1,15 @@
+{
+  "position_state": {
+    "position_id": "pos_1",
+    "symbol": "BTC-USDT",
+    "side": "long",
+    "entry_price": 100,
+    "current_price": 103,
+    "unrealized_pnl_pct": 3,
+    "age_minutes": 120,
+    "entry_reason_codes": ["trend"],
+    "thesis": "trend_following",
+    "stop_loss_pct": 0.02,
+    "take_profit_pct": 0.06
+  }
+}

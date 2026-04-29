@@ -1,0 +1,10 @@
+{
+  "equity_usdt": 12000,
+  "available_usdt": 9000,
+  "daily_pnl_pct": -0.4,
+  "open_positions_count": 1,
+  "same_symbol_existing_position": false,
+  "total_exposure_pct": 26,
+  "max_position_exposure_pct": 14,
+  "timestamp": "2026-04-28T15:30:00Z"
+}

@@ -1,0 +1,12 @@
+{
+  "symbol": "BTC-USDT-SWAP",
+  "consensus_direction": "long",
+  "weighted_direction": "long",
+  "avg_win_rate": 0.63,
+  "long_short_ratio": 1.22,
+  "smart_money_trend": "accumulate",
+  "entry_vwap": 67350,
+  "current_price": 68200,
+  "premium_discount_pct": 1.26,
+  "timestamp": "2026-04-28T15:30:00Z"
+}

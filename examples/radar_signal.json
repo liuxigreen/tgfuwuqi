@@ -1,0 +1,12 @@
+{
+  "symbol": "BTC-USDT-SWAP",
+  "market_type": "swap",
+  "direction": "long",
+  "score": 78,
+  "source": "radar.v1",
+  "timestamp": "2026-04-28T15:30:00Z",
+  "features": {
+    "oi_up": true,
+    "price_breakout": true
+  }
+}

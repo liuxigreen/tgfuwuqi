@@ -1,0 +1,15 @@
+{
+  "position_state": {
+    "position_id": "pos_001",
+    "symbol": "BTC-USDT-SWAP",
+    "side": "long",
+    "entry_price": 67000,
+    "current_price": 69000,
+    "unrealized_pnl_pct": 0.04,
+    "age_minutes": 120,
+    "entry_reason_codes": ["breakout"],
+    "thesis": "trend continues",
+    "stop_loss_pct": 0.02,
+    "take_profit_pct": 0.08
+  }
+}

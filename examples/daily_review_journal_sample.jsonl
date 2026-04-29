@@ -1,0 +1,1 @@
+{"event_type":"decision","symbol":"BTC-USDT-SWAP","payload":{"action":"observe","score_breakdown":{"total_score":60,"nuwa_score":55,"smart_money_score":50,"sentiment_score":52},"reason_codes":[],"blocked_reasons":[]}}
