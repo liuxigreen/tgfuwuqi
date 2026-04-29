@@ -7,6 +7,9 @@ def test_no_fake_metrics_when_no_outcomes():
     if r.get("ok"):
         assert r.get("total_pnl_usdt") is None
         assert r.get("avg_R") is None or r.get("avg_R") == "data_unavailable"
+        assert r.get("sharpe_ratio") is None or r.get("sharpe_ratio") == "data_unavailable"
+        assert r.get("sortino_ratio") is None or r.get("sortino_ratio") == "data_unavailable"
+        assert r.get("calmar_ratio") is None or r.get("calmar_ratio") == "data_unavailable"
 
 
 def test_proposal_insufficient_sample_size_flag():
